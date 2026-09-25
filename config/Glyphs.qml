@@ -15,6 +15,8 @@ Singleton {
     readonly property string battery: String.fromCodePoint(0xf0079)
     readonly property string batteryCharging: String.fromCodePoint(0xf0084)
     readonly property string bluetooth: String.fromCodePoint(0xf00af)
+    readonly property string coffee: String.fromCodePoint(0xf0176)
+    readonly property string coffeeOff: String.fromCodePoint(0xf0faa)
     readonly property string brightness: String.fromCodePoint(0xf00e0)
     readonly property string settings: String.fromCodePoint(0xf0493)
     readonly property string power: String.fromCodePoint(0xf0425)

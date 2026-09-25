@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.modules.bar
+import qs.services
 
 // qmllint disable uncreatable-type
 // False positive: PanelWindow is creatable from QML, but qmllint reads its C++
@@ -30,6 +31,12 @@ PanelWindow {
         y: pill.y
         width: pill.width
         height: pill.height
+    }
+
+    // Stops the compositor reporting idle, so hypridle never fires its timers.
+    IdleInhibitor {
+        window: panel
+        enabled: Idle.inhibited
     }
 
     SystemClock {

@@ -54,8 +54,24 @@ Item {
             return Glyphs.battery;
         case "bluetooth":
             return Glyphs.bluetooth;
+        case "caffeine":
+            return Idle.inhibited ? Glyphs.coffee : Glyphs.coffeeOff;
         }
         return "";
+    }
+
+    // The caffeine icon is a toggle, not a panel: it has no selected state and
+    // never changes what the form is showing.
+    function activeFor(key: string): bool {
+        return key === "caffeine" ? Idle.inhibited : root.selected === key;
+    }
+
+    function activate(key: string): void {
+        if (key === "caffeine") {
+            Idle.toggle();
+            return;
+        }
+        root.selected = root.selected === key ? "" : key;
     }
 
     // Covers the resting pill and the expanded form, so the hover region can
@@ -147,14 +163,14 @@ Item {
             visible: opacity > 0
 
             Repeater {
-                model: ["volume", "network", "battery", "bluetooth"]
+                model: ["caffeine", "volume", "network", "battery", "bluetooth"]
 
                 Icon {
                     required property var modelData
 
                     glyph: root.glyphFor(modelData)
-                    active: root.selected === modelData
-                    onClicked: root.selected = root.selected === modelData ? "" : modelData
+                    active: root.activeFor(modelData)
+                    onClicked: root.activate(modelData)
                 }
             }
         }
