@@ -55,8 +55,8 @@ thing that is growing belongs in a module.
 Generic, reusable, visual. `Icon`, `Slider`, and anything else another feature could adopt
 unchanged.
 
-**A file in `components/` must never import `qs.modules`.** This is the load-bearing rule
-of the whole layout — it is what keeps "reusable" honest. A component that needs to know
+**A file in `components/` must never import `qs.modules`.** This is the rule the whole
+layout rests on — it is what keeps "reusable" honest. A component that needs to know
 about volume is not a component; it is a feature widget, and it belongs in
 `modules/<feature>/`.
 
@@ -241,7 +241,15 @@ Where an animated element drives the mask, the region must be a superset of both
 resting and expanded shapes, so it can never shrink out from under the pointer mid-animation.
 
 **Panels are `Item`s that a feature owns**, sized from their content via `implicitWidth`/
-`implicitHeight`. They never position themselves in the window; the bar does that.
+`implicitHeight`. They never position themselves in the window; the bar does that. A panel
+owns its inner padding; the window owns where it sits.
+
+**A layer surface takes keyboard focus only while something needs typing.** Default to
+`WlrKeyboardFocus.None` and switch to `Exclusive` for as long as a text field is open,
+driven by a property the panel exposes. A surface left focusable steals the keyboard from
+the focused window on every click; one left exclusive holds the keyboard hostage, so every
+such form needs an escape that cannot be missed — `Escape`, a visible cancel, and a timeout
+on whatever it is waiting for.
 
 Once there are three panels, split each into a `Wrapper`/`Content` pair: `Wrapper` owns
 geometry, visibility and animation and holds a `Loader`; `Content` is the UI and exists

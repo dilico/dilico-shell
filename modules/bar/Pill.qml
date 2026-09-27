@@ -30,15 +30,27 @@ Item {
 
     readonly property real pillWidth: text.implicitWidth + horizontalPadding * 2
     readonly property real pillHeight: text.implicitHeight + verticalPadding * 2
-    readonly property real contentWidth: selected === ""
-        ? iconRow.implicitWidth : volumePanel.width
-    readonly property real contentHeight: selected === ""
-        ? iconRow.implicitHeight : volumePanel.implicitHeight
+
+    // The panel the selection shows, or null for the icon row. Icons without a
+    // panel of their own leave the row in place rather than opening an empty form.
+    readonly property var panel: {
+        switch (root.selected) {
+        case "volume":
+            return volumePanel;
+        case "network":
+            return networkPanel;
+        }
+        return null;
+    }
+
+    readonly property real contentWidth: root.panel ? root.panel.width : iconRow.implicitWidth
+    readonly property real contentHeight: root.panel ? root.panel.implicitHeight : iconRow.implicitHeight
 
     // The window is sized from this and must never change size while open.
-    readonly property real maxHeight: hoverPop + 400
+    readonly property real maxHeight: hoverPop + 460
 
-    readonly property bool open: hoverHandler.hovered || volumePanel.interacting || osd
+    readonly property bool open: hoverHandler.hovered || (root.panel?.interacting ?? false) || osd
+    readonly property bool wantsKeyboard: root.panel?.wantsKeyboard ?? false
 
     // Staged so the clock and the panel hand over rather than overlap.
     readonly property real contentOpacity: Math.max(0, progress * 2 - 1)
@@ -49,7 +61,7 @@ Item {
         case "volume":
             return volumePanel.statusGlyph;
         case "network":
-            return Glyphs.network;
+            return networkPanel.statusGlyph;
         case "battery":
             return Glyphs.battery;
         case "bluetooth":
@@ -159,7 +171,7 @@ Item {
             anchors.topMargin: root.verticalPadding
             anchors.alignWhenCentered: false
             spacing: 4
-            opacity: root.selected === "" ? root.contentOpacity : 0
+            opacity: root.panel ? 0 : root.contentOpacity
             visible: opacity > 0
 
             Repeater {
@@ -182,8 +194,27 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: root.verticalPadding
             anchors.alignWhenCentered: false
-            width: 260
+            width: 380
             opacity: root.selected === "volume" ? root.contentOpacity : 0
+            visible: opacity > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Animations.durationShort
+                    easing.type: Animations.easingType
+                }
+            }
+        }
+
+        NetworkPanel {
+            id: networkPanel
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: root.verticalPadding
+            anchors.alignWhenCentered: false
+            width: 380
+            opacity: root.selected === "network" ? root.contentOpacity : 0
             visible: opacity > 0
 
             Behavior on opacity {

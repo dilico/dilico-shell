@@ -7,8 +7,8 @@ Item {
     property real value: 0
     property real from: 0
     property real to: 1
-    property real trackHeight: 4
-    property real handleSize: 12
+    property real trackHeight: 8
+    property real handleSize: 20
     property color trackColor: Qt.alpha(Colors.text, 0.15)
     property color fillColor: Colors.accent
 
@@ -25,7 +25,7 @@ Item {
         root.moved(root.from + p * (root.to - root.from));
     }
 
-    implicitWidth: 120
+    implicitWidth: 140
     implicitHeight: Math.max(handleSize, trackHeight)
 
     Rectangle {

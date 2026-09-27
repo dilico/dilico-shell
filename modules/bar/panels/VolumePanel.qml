@@ -8,18 +8,25 @@ import qs.services
 Item {
     id: root
 
+    property real padding: 10
+
     readonly property bool interacting: slider.pressed
     readonly property real contentInset: muteButton.padding
     readonly property string statusGlyph: Audio.muted || Audio.volume === 0
         ? Glyphs.volumeOff
         : Audio.volume < 0.5 ? Glyphs.volumeMedium : Glyphs.volume
 
-    property bool listOpen: false
+    function outputGlyph(node: var): string {
+        const name = Audio.shortName(node).toLowerCase();
+        if (name.includes("hdmi") || name.includes("displayport"))
+            return Glyphs.monitor;
+        if (name.includes("head") || name.includes("earphone"))
+            return Glyphs.headphones;
+        return Glyphs.speaker;
+    }
 
-    implicitWidth: 260
-    implicitHeight: column.implicitHeight
-
-    onVisibleChanged: if (!visible) root.listOpen = false
+    implicitWidth: 380
+    implicitHeight: column.implicitHeight + root.padding * 2
 
     // Availability only needs probing while someone is looking at the list.
     Binding {
@@ -31,13 +38,22 @@ Item {
     Column {
         id: column
 
-        // Inset on the right to match the glyph's own padding on the left.
-        width: parent.width - root.contentInset
-        spacing: 6
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.leftMargin: root.padding
+        // Extra on the right to match the leading glyph's own padding.
+        anchors.rightMargin: root.padding + root.contentInset
+        anchors.topMargin: root.padding
+        spacing: 12
+
+        SectionLabel {
+            text: Audio.muted ? "Volume · muted" : "Volume"
+        }
 
         Row {
             width: parent.width
-            spacing: 6
+            spacing: 12
 
             Icon {
                 id: muteButton
@@ -59,46 +75,13 @@ Item {
             }
         }
 
-        Item {
-            width: parent.width
-            implicitHeight: 24
-
-            Text {
-                anchors.left: parent.left
-                anchors.right: chevron.left
-                anchors.rightMargin: 6
-                anchors.verticalCenter: parent.verticalCenter
-                elide: Text.ElideRight
-                text: Audio.shortName(Audio.sink)
-                color: Colors.text
-                font.family: Typography.fontFamily
-                font.pixelSize: Typography.fontSizeSmall
-            }
-
-            Text {
-                id: chevron
-
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.listOpen ? Glyphs.chevronUp : Glyphs.chevronDown
-                color: Colors.textDim
-                font.family: Typography.fontFamily
-                font.pixelSize: Typography.fontSizeSmall
-            }
-
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            TapHandler {
-                onTapped: root.listOpen = !root.listOpen
-            }
+        SectionLabel {
+            text: "Audio output"
         }
 
         Column {
             width: parent.width
-            spacing: 2
-            visible: root.listOpen
+            spacing: 6
 
             Repeater {
                 model: Audio.sinks
@@ -110,28 +93,28 @@ Item {
                     readonly property bool current: modelData === Audio.sink
 
                     width: parent.width
-                    implicitHeight: 22
+                    implicitHeight: 36
 
                     Text {
+                        id: kind
+
                         anchors.left: parent.left
-                        anchors.leftMargin: 4
-                        anchors.right: tick.left
                         anchors.verticalCenter: parent.verticalCenter
-                        elide: Text.ElideRight
-                        text: Audio.shortName(option.modelData)
-                        color: optionHover.hovered || option.current
-                            ? Colors.accent : Colors.textDim
+                        text: root.outputGlyph(option.modelData)
+                        color: option.current ? Colors.accent : Colors.textDim
                         font.family: Typography.fontFamily
                         font.pixelSize: Typography.fontSizeSmall
                     }
 
                     Text {
-                        id: tick
-
+                        anchors.left: kind.right
+                        anchors.leftMargin: 8
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        text: option.current ? Glyphs.check : ""
-                        color: Colors.accent
+                        elide: Text.ElideRight
+                        text: Audio.shortName(option.modelData)
+                        color: optionHover.hovered || option.current
+                            ? Colors.accent : Colors.textDim
                         font.family: Typography.fontFamily
                         font.pixelSize: Typography.fontSizeSmall
                     }
@@ -143,10 +126,7 @@ Item {
                     }
 
                     TapHandler {
-                        onTapped: {
-                            Audio.setSink(option.modelData);
-                            root.listOpen = false;
-                        }
+                        onTapped: Audio.setSink(option.modelData)
                     }
                 }
             }

@@ -17,6 +17,11 @@ PanelWindow {
     }
 
     WlrLayershell.namespace: "quickshell:bar"
+
+    // Taken only while a panel needs typing, so the bar never steals the
+    // keyboard from the focused window at any other time.
+    WlrLayershell.keyboardFocus: pill.wantsKeyboard ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
     color: "transparent"
 
     // Constant: the surface must never resize while the bar is in use.

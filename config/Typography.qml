@@ -8,6 +8,7 @@ Singleton {
 
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
     readonly property int fontSize: 16
-    readonly property int fontSizeSmall: 13
+    readonly property int fontSizeSmall: 16
+    readonly property int fontSizeCaption: 13
     readonly property int iconSize: 18
 }
