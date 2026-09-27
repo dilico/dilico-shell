@@ -49,7 +49,14 @@ Item {
     // The window is sized from this and must never change size while open.
     readonly property real maxHeight: hoverPop + 460
 
-    readonly property bool open: hoverHandler.hovered || (root.panel?.interacting ?? false) || osd
+    // Whether the pill is on screen at all.
+    property bool shown: true
+
+    // closeTimer holds the hover on past the pointer leaving: the pill's top
+    // edge sits inside the band that reveals it, so without it the form flicks
+    // open and shut as the pointer settles across that line.
+    readonly property bool open: hoverHandler.hovered || closeTimer.running ||
+        (root.panel?.interacting ?? false) || osd
     readonly property bool wantsKeyboard: root.panel?.wantsKeyboard ?? false
 
     // Staged so the clock and the panel hand over rather than overlap.
@@ -112,6 +119,17 @@ Item {
 
     HoverHandler {
         id: hoverHandler
+
+        enabled: root.shown
+
+        onHoveredChanged: if (!hovered)
+            closeTimer.restart()
+    }
+
+    Timer {
+        id: closeTimer
+
+        interval: 250
     }
 
     Timer {
@@ -147,6 +165,29 @@ Item {
         border.width: 1
         border.color: Colors.border
         border.pixelAligned: false
+        opacity: root.shown ? 1 : 0
+
+        // Slides out under the top edge rather than fading in place. Only the
+        // background moves: a transform carries the hit area with it, so sliding
+        // the item that owns the hover would sweep it past the pointer and open
+        // the form on the way in.
+        transform: Translate {
+            y: root.shown ? 0 : -root.pillHeight
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Animations.durationMedium
+                    easing.type: Animations.easingType
+                }
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Animations.durationMedium
+                easing.type: Animations.easingType
+            }
+        }
 
         Text {
             id: text

@@ -240,6 +240,13 @@ visible jitter no amount of QML smoothing will fix.
 Where an animated element drives the mask, the region must be a superset of both the
 resting and expanded shapes, so it can never shrink out from under the pointer mid-animation.
 
+**A bar that hides itself reserves nothing** (`exclusiveZone: 0`) and is called up by a band
+along the screen edge that stays in the mask at all times. The band is thin while hidden, so
+it costs the window underneath almost nothing, and much taller once the bar is up, so the
+pointer can travel to a bar that appeared somewhere else along the edge. Every hover that
+drives the reveal is held past the pointer leaving; without that, a boundary the pointer
+comes to rest on toggles.
+
 **Panels are `Item`s that a feature owns**, sized from their content via `implicitWidth`/
 `implicitHeight`. They never position themselves in the window; the bar does that. A panel
 owns its inner padding; the window owns where it sits.
@@ -266,7 +273,9 @@ animate a window's size.
 
 Anything whose geometry is driven by hover must present a **fixed-size hover area**; the
 visual animates inside it. An element that both detects hover and resizes on hover
-oscillates at its own edges.
+oscillates at its own edges. A `transform` carries the hit area with it, so an item that
+owns a `HoverHandler` must stay put and the animation go on a child: a moving item sweeps
+its own hover region across the pointer and fires on the way past.
 
 Cross-fades hand over rather than overlap: when one element replaces another in the same
 slot, stage the opacities so the first reaches 0 before the second leaves 0.
