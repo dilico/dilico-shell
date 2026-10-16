@@ -1,0 +1,7 @@
+# Machine-specific: contains this host's uid and shell id.
+# See the README for how to regenerate it.
+.qmlls.ini
+
+# Qt/QML caches
+*.qmlc
+*.jsc
