@@ -13,9 +13,13 @@ Item {
     property bool muted: false
     // Whether the icon is a mute button. Brightness has nothing to mute.
     property bool toggleable: true
+    // What the chevron at the right edge opens, for assistive tech; none, no
+    // chevron.
+    property string detailLabel: ""
 
     signal moved(real value)
     signal toggled()
+    signal detailClicked()
 
     // What the icon says it does, for assistive tech.
     function buttonLabel(): string {
@@ -54,10 +58,23 @@ Item {
     Caption {
         id: valueText
 
-        anchors.right: parent.right
+        anchors.right: detail.visible ? detail.left : parent.right
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         horizontalAlignment: Text.AlignRight
         text: root.muted ? "off" : Format.percent(root.value)
+    }
+
+    ChevronButton {
+        id: detail
+
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        visible: root.detailLabel !== ""
+
+        Accessible.name: root.detailLabel
+
+        onClicked: root.detailClicked()
     }
 }

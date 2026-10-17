@@ -1,8 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.components
-import qs.config
 import qs.services
 import qs.utils
 
@@ -27,11 +25,7 @@ ListRow {
     busyText: Bluez.activity(root.device)
     hasDetails: root.paired
 
-    leading: Label {
-        text: Icons.device(root.kind)
-        color: root.current ? Colors.text : Colors.textMid
-        font.pixelSize: Typography.iconSize
-    }
+    glyph: Icons.device(root.kind)
 
     body: DetailsPanel {
         facts: [

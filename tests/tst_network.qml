@@ -101,10 +101,16 @@ Item {
 
         function init() {
             Network.cancel();
+            Network.enabled = true;
             Network.networks = [chapel, studio, home];
             card = createTemporaryObject(cardComponent, parent);
             Network.calls = [];
             waitForRendering(card);
+        }
+
+        function test_switchTurnsItOff() {
+            mouseClick(switchControl());
+            compare(lastCall(), ["setEnabled", false]);
         }
 
         function test_securedOpensPromptAndSubmits() {

@@ -163,8 +163,10 @@ Item {
                         glyph: Icons.volume(Audio.muted, Audio.volume)
                         value: Audio.volume
                         muted: Audio.muted
+                        detailLabel: "show outputs"
                         onMoved: v => Audio.setVolume(v)
                         onToggled: Audio.toggleMuted()
+                        onDetailClicked: root.pane = outputPane
                     }
 
                     SliderRow {
@@ -173,8 +175,10 @@ Item {
                         glyph: Audio.micMuted ? Glyphs.microphoneOff : Glyphs.microphone
                         value: Audio.micVolume
                         muted: Audio.micMuted
+                        detailLabel: "show inputs"
                         onMoved: v => Audio.setMicVolume(v)
                         onToggled: Audio.toggleMicMuted()
+                        onDetailClicked: root.pane = inputPane
                     }
 
                     SliderRow {
@@ -237,6 +241,24 @@ Item {
         id: networkPane
 
         NetworkCard {
+            onBack: root.pane = homePane
+        }
+    }
+
+    Component {
+        id: outputPane
+
+        AudioCard {
+            output: true
+            onBack: root.pane = homePane
+        }
+    }
+
+    Component {
+        id: inputPane
+
+        AudioCard {
+            output: false
             onBack: root.pane = homePane
         }
     }

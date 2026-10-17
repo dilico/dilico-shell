@@ -56,6 +56,11 @@ Item {
             waitForRendering(card);
         }
 
+        function test_switchTurnsItOff() {
+            mouseClick(switchControl());
+            compare(lastCall(), ["setEnabled", false]);
+        }
+
         function test_secondLine() {
             compare(findChild(row(headphones), "summary").text, "headphones · 84%");
             compare(findChild(row(keyboard), "summary").text, "keyboard · paired");

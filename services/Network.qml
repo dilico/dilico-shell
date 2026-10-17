@@ -64,16 +64,7 @@ Singleton {
     // loses a bar, not with every flicker of signal: the row in use stays put.
     // A hidden network has no name to show, so it is left out. Worked out
     // only while something shows it.
-    readonly property var networks: root.watchers === 0 ? [] : (root.device?.networks?.values ?? []).filter(n => n.name !== "").sort((a, b) => {
-        if (a.connected !== b.connected)
-            return a.connected ? -1 : 1;
-        const bars = Icons.bars(b.signalStrength) - Icons.bars(a.signalStrength);
-        if (bars !== 0)
-            return bars;
-        return a.name.localeCompare(b.name, undefined, {
-            numeric: true
-        });
-    })
+    readonly property var networks: root.watchers === 0 ? [] : (root.device?.networks?.values ?? []).filter(n => n.name !== "").sort((a, b) => Order.first(a.connected, b.connected) || Icons.bars(b.signalStrength) - Icons.bars(a.signalStrength) || Order.byName(a.name, b.name))
 
     function setEnabled(on: bool): void {
         Networking.wifiEnabled = on;

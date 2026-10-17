@@ -21,10 +21,13 @@ ListCard {
     }
 
     service: Bluez
+    switchChecked: Bluez.enabled
     title: "bluetooth"
     items: Bluez.devices
     offText: Bluez.available ? "bluetooth is off" : "no bluetooth adapter"
     emptyText: "looking for devices"
+
+    onSwitchToggled: on => Bluez.setEnabled(on)
 
     delegate: BluetoothRow {
         id: row

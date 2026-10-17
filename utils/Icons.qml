@@ -27,8 +27,8 @@ Singleton {
         return connected > 0 ? Glyphs.bluetoothConnected : Glyphs.bluetooth;
     }
 
-    // A bluetooth device, by the kind Bluez names it; Glyphs has an entry
-    // under each kind's name.
+    // A device, by the kind its service names it (Bluez.kind, Audio.kind);
+    // Glyphs has an entry under each kind's name.
     function device(kind: string): string {
         return Glyphs[kind] ?? Glyphs.bluetooth;
     }

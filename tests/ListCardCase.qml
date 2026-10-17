@@ -15,6 +15,10 @@ TestCase {
         return findChild(root.card, "list").itemAtIndex(root.card.items.indexOf(item));
     }
 
+    function switchControl(): var {
+        return findChild(root.card, "switch");
+    }
+
     function lastCall(): var {
         return root.service.calls[root.service.calls.length - 1];
     }

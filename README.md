@@ -16,7 +16,8 @@ from the edge and flares into it (`true`).
   disconnect, forget; the `>` on bluetooth lists devices with their kind and battery:
   connect one, pairing it first if new, or open a paired one's details — address,
   connect automatically, disconnect, forget); volume, microphone and brightness sliders
-  (the icon beside a slider mutes it); power profile; now playing; notifications; a line
+  (the icon beside a slider mutes it; the `>` on volume and microphone lists the outputs
+  or inputs with something plugged in, to switch to another); power profile; now playing; notifications; a line
   of cpu, memory, temperature and battery.
 
 Close it with a click outside, or Escape once you've clicked anything inside it (the

@@ -13,8 +13,13 @@ import qs.config
 Item {
     id: root
 
-    // A service with `enabled`, `setEnabled()` and `watchers`.
+    // The service it shows, kept watched while this exists.
     required property var service
+    // What the header's switch shows; clicking it reports switchToggled.
+    property bool switchChecked: false
+    // Whether the list shows: by default with the switch, since off, a list
+    // of networks or devices has nothing left in it.
+    property bool listShown: root.switchChecked
     property string title: ""
     property var items: []
     property Component delegate: null
@@ -24,6 +29,7 @@ Item {
     property var detailed: null
 
     signal back()
+    signal switchToggled(bool on)
 
     function toggleDetails(item: var): void {
         root.detailed = root.detailed === item ? null : item;
@@ -77,14 +83,15 @@ Item {
         }
 
         Switch {
+            objectName: "switch"
             anchors.right: parent.right
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            checked: root.service.enabled
+            checked: root.switchChecked
 
             Accessible.name: root.title
 
-            onClicked: root.service.setEnabled(!root.service.enabled)
+            onClicked: root.switchToggled(!root.switchChecked)
         }
     }
 
@@ -104,7 +111,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: Spacing.list
         anchors.topMargin: 0
-        visible: root.service.enabled
+        visible: root.listShown
         clip: true
         spacing: 1
         boundsBehavior: Flickable.StopAtBounds
@@ -115,7 +122,7 @@ Item {
     Subtext {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: header.height / 2
-        visible: !root.service.enabled || root.items.length === 0
-        text: root.service.enabled ? root.emptyText : root.offText
+        visible: !root.listShown || root.items.length === 0
+        text: root.listShown ? root.emptyText : root.offText
     }
 }

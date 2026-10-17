@@ -35,6 +35,7 @@ ListCard {
     }
 
     service: Network
+    switchChecked: Network.enabled
     title: "network"
     items: Network.networks
     offText: "wi-fi is off"
@@ -43,6 +44,7 @@ ListCard {
     // Opens clean, and leaves nothing behind but a password already sent.
     Component.onCompleted: Network.abandon()
     Component.onDestruction: Network.abandon()
+    onSwitchToggled: on => Network.setEnabled(on)
 
     delegate: NetworkRow {
         id: row

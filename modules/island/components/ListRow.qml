@@ -13,15 +13,18 @@ Item {
 
     property string title: ""
     property string subtitle: ""
-    // The one in use: a raised ground, a bold name, and "connected".
+    // The one in use: a raised ground, a bold name, and `currentText`.
     property bool current: false
+    property string currentText: "connected"
     // What it is busy doing, such as "connecting", or "". It shows on the
     // right with dots counting up the way a spinner would, without the motion.
     property string busyText: ""
     // A small glyph at the far right, such as a padlock, and what it means.
     property string badge: ""
     property string badgeName: ""
-    property Component leading: null
+    // What goes on the left: a glyph, or anything else as `leading`.
+    property string glyph: ""
+    property Component leading: glyphLabel
     // A chevron opens the details; the list keeps one row's open at a time.
     property bool hasDetails: false
     property bool detailsOpen: false
@@ -45,7 +48,7 @@ Item {
 
     function statusText(): string {
         if (root.current)
-            return "connected";
+            return root.currentText;
         return root.busy ? `${root.busyText}${".".repeat(root.dots)}` : "";
     }
 
@@ -189,6 +192,16 @@ Item {
             width: under.width - under.leftPadding - under.rightPadding
             active: root.bodyOpen
             sourceComponent: root.body
+        }
+    }
+
+    Component {
+        id: glyphLabel
+
+        Label {
+            text: root.glyph
+            color: root.current ? Colors.text : Colors.textMid
+            font.pixelSize: Typography.iconSize
         }
     }
 }

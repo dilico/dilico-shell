@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import qs.utils
 
 // Named for the daemon rather than "Bluetooth", which would shadow the
 // Quickshell.Bluetooth singleton this file reads from.
@@ -30,15 +31,7 @@ Singleton {
     // Connected first, then paired, then by name. A device found nearby that
     // gives only its address has nothing to show, so it is left out. Worked
     // out only while something shows it.
-    readonly property var devices: root.watchers === 0 ? [] : (root.adapter?.devices?.values ?? []).filter(d => d.paired || !root.nameless(d)).sort((a, b) => {
-        if (a.connected !== b.connected)
-            return a.connected ? -1 : 1;
-        if (a.paired !== b.paired)
-            return a.paired ? -1 : 1;
-        return root.deviceName(a).localeCompare(root.deviceName(b), undefined, {
-            numeric: true
-        });
-    })
+    readonly property var devices: root.watchers === 0 ? [] : (root.adapter?.devices?.values ?? []).filter(d => d.paired || !root.nameless(d)).sort((a, b) => Order.first(a.connected, b.connected) || Order.first(a.paired, b.paired) || Order.byName(root.deviceName(a), root.deviceName(b)))
 
     function setEnabled(on: bool): void {
         if (root.adapter)
