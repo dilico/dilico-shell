@@ -95,26 +95,9 @@ Item {
         }
     }
 
-    TestCase {
+    ListCardCase {
         name: "NetworkCard"
-        when: windowShown
-
-        property var card: null
-
-        function row(network) {
-            return findChild(card, "networks").itemAtIndex(Network.networks.indexOf(network));
-        }
-
-        function lastCall() {
-            return Network.calls[Network.calls.length - 1];
-        }
-
-        // Opening a row changes its height; the list moves the rows under it
-        // on its next layout pass, so a click has to wait for that.
-        function clickWhenLaidOut(item) {
-            waitForRendering(card);
-            mouseClick(item);
-        }
+        service: Network
 
         function init() {
             Network.cancel();
@@ -170,7 +153,7 @@ Item {
             compare(Network.calls.length, 0, "nothing to join");
             clickWhenLaidOut(findChild(row(chapel), "disconnect"));
             compare(lastCall(), ["disconnect", "the-chapel"]);
-            clickWhenLaidOut(findChild(row(chapel), "autoJoin"));
+            clickWhenLaidOut(findChild(row(chapel), "detailSwitch"));
             compare(lastCall(), ["setAutoJoin", false], "auto-join starts on and turns off");
         }
 

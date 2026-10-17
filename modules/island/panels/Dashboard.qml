@@ -13,10 +13,10 @@ Item {
 
     required property date date
 
-    // What the right-hand column shows: "home" for media and notifications,
-    // "network" for the wifi list. Back to home whenever the dashboard opens,
-    // since it is rebuilt each time.
-    property string pane: "home"
+    // What the right-hand column shows: media and notifications, or one of
+    // the lists. Back to home whenever the dashboard opens, since it is
+    // rebuilt each time.
+    property Component pane: homePane
 
     readonly property int padding: 20
     // Tighter than the sides: the big clock's line height already adds space
@@ -120,7 +120,7 @@ Item {
                         active: Network.enabled
                         detailLabel: "show networks"
                         onClicked: Network.setEnabled(!Network.enabled)
-                        onDetailClicked: root.pane = "network"
+                        onDetailClicked: root.pane = networkPane
                     }
 
                     Tile {
@@ -129,7 +129,9 @@ Item {
                         title: "bluetooth"
                         subtitle: root.bluetoothSubtitle()
                         active: Bluez.enabled
+                        detailLabel: "show devices"
                         onClicked: Bluez.setEnabled(!Bluez.enabled)
+                        onDetailClicked: root.pane = bluetoothPane
                     }
 
                     Tile {
@@ -204,7 +206,7 @@ Item {
                 Layout.preferredWidth: 1
                 Layout.preferredHeight: controls.implicitHeight
                 Layout.alignment: Qt.AlignTop
-                sourceComponent: root.pane === "network" ? networkPane : homePane
+                sourceComponent: root.pane
             }
         }
 
@@ -235,7 +237,15 @@ Item {
         id: networkPane
 
         NetworkCard {
-            onBack: root.pane = "home"
+            onBack: root.pane = homePane
+        }
+    }
+
+    Component {
+        id: bluetoothPane
+
+        BluetoothCard {
+            onBack: root.pane = homePane
         }
     }
 }

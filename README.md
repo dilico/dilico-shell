@@ -13,7 +13,9 @@ from the edge and flares into it (`true`).
   bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
   by strength, with their security and signal: join one, with a password if it asks;
   a saved one opens details — internet status, access points, last used, auto-join,
-  disconnect, forget); volume, microphone and brightness sliders
+  disconnect, forget; the `>` on bluetooth lists devices with their kind and battery:
+  connect one, pairing it first if new, or open a paired one's details — address,
+  connect automatically, disconnect, forget); volume, microphone and brightness sliders
   (the icon beside a slider mutes it); power profile; now playing; notifications; a line
   of cpu, memory, temperature and battery.
 

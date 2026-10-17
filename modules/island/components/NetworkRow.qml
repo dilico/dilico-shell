@@ -6,192 +6,43 @@ import qs.config
 import qs.services
 import qs.utils
 
-// One network in the list: its name over its security and signal, and under
-// it either a password prompt or a saved network's details. It only shows and
-// reports; the list decides what a click does and what is open.
-Item {
+// One network: its signal, its name over its security and strength, and
+// under it a password prompt or a saved network's details.
+ListRow {
     id: root
 
     // Null once NetworkManager drops the network, which it does when the
     // network goes out of range, until the list catches up. Everything here
     // reads it through the defaults below.
     required property var network
-    // Whether this row's details are open; the list keeps one open at a time.
-    property bool detailsOpen: false
 
-    readonly property string name: root.network?.name ?? ""
     readonly property real strength: root.network?.signalStrength ?? 0
     readonly property bool known: root.network?.known ?? false
-    readonly property bool current: root.network?.connected ?? false
     readonly property bool joining: root.network !== null && Network.joining === root.network
-    readonly property bool connecting: Network.connecting(root.network)
     readonly property bool expanded: root.joining && (Network.needsPassword || Network.failure !== "")
-    // Animates "connecting" the way a spinner would, without the motion.
-    property int dots: 0
-
-    signal clicked()
-    signal detailsToggled()
-
-    // Raised for the connected network, lit while something is open under it.
-    function ground(): color {
-        if (root.current)
-            return Colors.surfaceRaised;
-        return root.expanded || root.detailsOpen ? Colors.surfaceHover : "transparent";
-    }
 
     visible: root.network !== null
-    implicitHeight: line.height + (body.visible ? body.implicitHeight : 0)
+    title: root.network?.name ?? ""
+    subtitle: `${Network.securityName(root.network)} · ${Format.percent(root.strength)}${root.known && !root.current ? " · saved" : ""}`
+    current: root.network?.connected ?? false
+    busyText: Network.connecting(root.network) ? "connecting" : ""
+    badge: !root.current && !root.busy && Network.secured(root.network) ? Glyphs.lockOutline : ""
+    badgeName: "secured"
+    hasDetails: root.known
+    bodyOpen: root.expanded || root.detailsOpen
+    body: root.expanded ? prompt : details
 
-    Timer {
-        running: root.connecting
-        interval: 300
-        repeat: true
-        onTriggered: root.dots = (root.dots + 1) % 4
-        onRunningChanged: root.dots = 0
+    leading: SignalBars {
+        lit: Icons.bars(root.strength)
+        litColor: root.current ? Colors.text : Colors.textMid
     }
 
-    // Shows the chevron. It covers the whole row, so moving onto the chevron
-    // cannot hide it out from under the pointer.
-    HoverHandler {
-        id: rowHover
-    }
+    Component {
+        id: details
 
-    Surface {
-        anchors.fill: parent
-        radius: Rounding.small
-        hovered: pick.hovered && !root.current
-        restColor: root.ground()
-    }
-
-    Item {
-        id: line
-
-        width: parent.width
-        height: 46
-
-        Pressable {
-            id: pick
-
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: chevron.visible ? chevron.left : parent.right
-
-            Accessible.name: root.name
-
-            onClicked: root.clicked()
-
-            SignalBars {
-                id: bars
-
-                anchors.left: parent.left
-                anchors.leftMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                lit: Icons.bars(root.strength)
-                litColor: root.current ? Colors.text : Colors.textMid
-            }
-
-            Column {
-                anchors.left: bars.right
-                anchors.leftMargin: 10
-                anchors.right: status.left
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 2
-
-                Label {
-                    width: parent.width
-                    text: root.name
-                    elide: Text.ElideRight
-                    font.weight: root.current ? Font.DemiBold : Font.Normal
-                }
-
-                Caption {
-                    objectName: "summary"
-                    width: parent.width
-                    text: `${Network.securityName(root.network)} · ${Format.percent(root.strength)}${root.known && !root.current ? " · saved" : ""}`
-                    elide: Text.ElideRight
-                }
-            }
-
-            Row {
-                id: status
-
-                anchors.right: parent.right
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
-
-                Caption {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: root.current || root.connecting
-                    text: root.current ? "connected" : `connecting${".".repeat(root.dots)}`
-                    color: Colors.textMid
-                }
-
-                Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: root.current
-                    text: Glyphs.check
-                }
-
-                Caption {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: !root.current && !root.connecting && Network.secured(root.network)
-                    text: Glyphs.lockOutline
-
-                    Accessible.name: "secured"
-                }
-            }
-        }
-
-        // Only a saved network has details. Its place is kept while hidden,
-        // so the row does not shift as the pointer comes and goes.
-        ChevronButton {
-            id: chevron
-
-            objectName: "details"
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            visible: root.known
-            opacity: rowHover.hovered || root.detailsOpen || root.current ? 1 : 0
-            open: root.detailsOpen
-
-            Accessible.name: `${root.detailsOpen ? "hide" : "show"} details for ${root.name}`
-
-            onClicked: root.detailsToggled()
-        }
-    }
-
-    // The prompt and the details take the same place under the line, inset
-    // the same way. Each is loaded only while open: one row has it at a time.
-    Column {
-        id: body
-
-        anchors.top: line.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        topPadding: 2
-        leftPadding: 8
-        rightPadding: 8
-        bottomPadding: 8
-        visible: root.expanded || root.detailsOpen
-
-        Loader {
-            width: body.width - body.leftPadding - body.rightPadding
-            active: root.expanded
-            sourceComponent: prompt
-        }
-
-        Loader {
-            width: body.width - body.leftPadding - body.rightPadding
-            active: root.detailsOpen
-
-            sourceComponent: NetworkDetails {
-                network: root.network
-                connected: root.current
-            }
+        NetworkDetails {
+            network: root.network
+            connected: root.current
         }
     }
 
@@ -233,7 +84,7 @@ Item {
                     password: true
                     placeholder: "password"
 
-                    Accessible.name: `password for ${root.name}`
+                    Accessible.name: `password for ${root.title}`
 
                     onAccepted: Network.submit(password.text)
                     onCancelled: Network.cancel()
@@ -247,7 +98,7 @@ Item {
                     height: parent.height
                     interactive: !Network.busy
 
-                    Accessible.name: `connect to ${root.name}`
+                    Accessible.name: `connect to ${root.title}`
 
                     onClicked: Network.submit(password.text)
 
