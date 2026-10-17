@@ -13,6 +13,11 @@ Singleton {
         return `${Math.round(fraction * 100)}%`;
     }
 
+    // 0..1 as a percentage, or "off" when muted: 0.59 is "59%".
+    function percentOrOff(muted: bool, fraction: real): string {
+        return muted ? "off" : root.percent(fraction);
+    }
+
     // The time of day, 24-hour: "09:41".
     function time(d: date): string {
         return Qt.formatDateTime(d, "HH:mm");

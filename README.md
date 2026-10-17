@@ -19,6 +19,9 @@ from the edge and flares into it (`true`).
   (the icon beside a slider mutes it; the `>` on volume and microphone lists the outputs
   or inputs with something plugged in, to switch to another); power profile; now playing; notifications; a line
   of cpu, memory, temperature and battery.
+- **Volume pill** — when the volume changes (the volume and mute keys, or anything else
+  that turns the output up, down or off), the island drops down with the level for a
+  moment, on the screen you are on. Not while the dashboard is open, whose slider shows it.
 
 Close it with a click outside, or Escape once you've clicked anything inside it (the
 dashboard only takes the keyboard on a click, so a workspace switch while it's open
@@ -91,13 +94,13 @@ components/                        Label, Subtext, Caption, Pressable, Surface,
                                    Track, SignalBars, Segmented, TextField, Watch
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
-services/                          Audio, Battery, Bluez, Brightness, Idle, Media,
-                                   Network, Notifications, PowerMode, Radios, Session,
-                                   SystemStats
+services/                          Audio, Battery, Bluez, Brightness, Compositor, Idle,
+                                   Media, Network, Notifications, PowerMode, Radios,
+                                   Session, SystemStats
 utils/                             Icons, Format
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop
 modules/island/panels/             Dashboard
-modules/island/components/         the dashboard's own widgets
+modules/island/components/         the island's own widgets
 docs/quickshell-conventions.md     where new code goes, and why
 ```

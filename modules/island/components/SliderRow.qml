@@ -62,7 +62,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         horizontalAlignment: Text.AlignRight
-        text: root.muted ? "off" : Format.percent(root.value)
+        text: Format.percentOrOff(root.muted, root.value)
     }
 
     ChevronButton {

@@ -313,6 +313,9 @@ being joined) is one for all of them. Panels are ordinary `Item`s inside it, nev
 windows of their own. A second window is justified only when the content must outlive or
 escape the bar — a lock screen, a standalone settings window.
 
+**Something that answers no pointer shows on one screen only**, the one the user is on — the
+volume shown after it changes. Each window asks `Compositor` whether that is its screen.
+
 **[engine]** Every window sets an explicit `WlrLayershell.namespace`, per surface
 (`quickshell:dilico`), so compositor rules can target one surface rather than everything.
 
@@ -406,6 +409,9 @@ Keep the division clean: **the compositor owns key bindings and window rules; th
 observes and displays.** Volume keys run `wpctl`; the shell notices the resulting PipeWire
 change and shows an OSD. Neither needs to know about the other, and the OSD then works for
 every source of change — media keys, a terminal, a headset button.
+
+Whatever the shell reads from Hyprland — which screen is focused — goes through
+`services/Compositor`, so nothing else imports `Quickshell.Hyprland`.
 
 The shell may grow an `IpcHandler` when the compositor genuinely needs to command it
 (toggling a panel from a keybind). Prefer observation first; a shell that only listens

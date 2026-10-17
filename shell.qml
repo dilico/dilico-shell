@@ -146,6 +146,7 @@ ShellRoot {
 
                 anchors.fill: parent
                 shown: panel.revealed
+                focused: Compositor.focused(panel.modelData)
                 date: clock.date
 
                 // On the island, which fills the window and holds everything

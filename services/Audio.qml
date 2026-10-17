@@ -39,6 +39,11 @@ Singleton {
     // that a list would show ports it is about to hide.
     readonly property bool listsReady: root.unplugged !== null && root.audioDevices.every(n => n.ready)
 
+    // The output in use was turned up, down, muted or unmuted: a volume key,
+    // the dashboard, another app. Not when the output itself changes, nor when
+    // it first reports.
+    signal adjusted()
+
     function setVolume(v: real): void {
         root.setNodeVolume(root.sink, v);
     }
@@ -145,6 +150,20 @@ Singleton {
         }
         if (JSON.stringify(map) !== JSON.stringify(root.unplugged))
             root.unplugged = map;
+    }
+
+    // Bound to the output in use once it has reported, so a switch or a first
+    // report moves the target rather than emitting.
+    Connections {
+        target: root.sink?.ready ? root.sink.audio : null
+
+        function onVolumesChanged(): void {
+            root.adjusted();
+        }
+
+        function onMutedChanged(): void {
+            root.adjusted();
+        }
     }
 
     // Volume and mute, and the properties that say which port a device is,

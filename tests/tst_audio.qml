@@ -52,6 +52,12 @@ Item {
         }
     }
 
+    Component {
+        id: volumeLevelComponent
+
+        VolumeLevel {}
+    }
+
     ListCardCase {
         name: "AudioCard"
         service: Audio
@@ -116,6 +122,21 @@ Item {
             mouseClick(slider, 10, slider.height / 2);
             compare(toggles, 1);
             compare(details, 1, "the mute button does not open the list");
+        }
+    }
+
+    TestCase {
+        name: "VolumeLevel"
+        when: windowShown
+
+        function test_widthHoldsWhileTheNumberGrows() {
+            const level = createTemporaryObject(volumeLevelComponent, parent, { value: 0.05 });
+            // A Row lays itself out on the next frame.
+            waitForRendering(level);
+            const narrow = level.implicitWidth;
+            level.value = 1;
+            waitForRendering(level);
+            compare(level.implicitWidth, narrow, "the pill keeps its width from 5% to 100%");
         }
     }
 
