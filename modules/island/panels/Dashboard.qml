@@ -13,9 +13,9 @@ Item {
 
     required property date date
 
-    // What the right-hand column shows: media and notifications, or one of
-    // the lists. Back to home whenever the dashboard opens, since it is
-    // rebuilt each time.
+    // What the right-hand column shows: media and notifications, one of the
+    // lists, or the calendar. Back to home whenever the dashboard opens, since
+    // it is rebuilt each time.
     property Component pane: homePane
 
     readonly property int padding: 20
@@ -61,26 +61,48 @@ Item {
             Layout.fillWidth: true
             spacing: 14
 
-            Label {
+            // The clock and date open the calendar, and close it again. The
+            // date brightens under the pointer, the way a word to click does.
+            Pressable {
+                id: dateButton
+
                 Layout.alignment: Qt.AlignBottom
-                text: Format.time(root.date)
-                font.pixelSize: Typography.clockSize
-                font.weight: Font.Light
-                font.letterSpacing: -2
-            }
+                implicitWidth: clockRow.implicitWidth
+                implicitHeight: clockRow.implicitHeight
 
-            ColumnLayout {
-                Layout.alignment: Qt.AlignBottom
-                Layout.bottomMargin: 8
-                spacing: 2
+                Accessible.name: "calendar"
 
-                Label {
-                    text: Format.date(root.date, "dddd")
-                    font.weight: Font.DemiBold
-                }
+                onClicked: root.pane = root.pane === calendarPane ? homePane : calendarPane
 
-                Subtext {
-                    text: Format.date(root.date, "d MMMM")
+                RowLayout {
+                    id: clockRow
+
+                    anchors.fill: parent
+                    spacing: 14
+
+                    Label {
+                        Layout.alignment: Qt.AlignBottom
+                        text: Format.time(root.date)
+                        font.pixelSize: Typography.clockSize
+                        font.weight: Font.Light
+                        font.letterSpacing: -2
+                    }
+
+                    ColumnLayout {
+                        Layout.alignment: Qt.AlignBottom
+                        Layout.bottomMargin: 8
+                        spacing: 2
+
+                        Label {
+                            text: Format.date(root.date, "dddd")
+                            font.weight: Font.DemiBold
+                        }
+
+                        Subtext {
+                            text: Format.date(root.date, "d MMMM")
+                            color: dateButton.hovered ? Colors.text : Colors.textDim
+                        }
+                    }
                 }
             }
 
@@ -206,6 +228,8 @@ Item {
             // As tall as the controls column and no taller. Only the pane on
             // show exists, so only what it shows is polled or scanned.
             Loader {
+                id: paneLoader
+
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 Layout.preferredHeight: controls.implicitHeight
@@ -216,6 +240,16 @@ Item {
 
         StatsLine {
             Layout.fillWidth: true
+        }
+    }
+
+    // Every pane but home has a way back to it.
+    Connections {
+        target: paneLoader.item
+        ignoreUnknownSignals: true
+
+        function onBack(): void {
+            root.pane = homePane;
         }
     }
 
@@ -240,9 +274,7 @@ Item {
     Component {
         id: networkPane
 
-        NetworkCard {
-            onBack: root.pane = homePane
-        }
+        NetworkCard {}
     }
 
     Component {
@@ -250,7 +282,6 @@ Item {
 
         AudioCard {
             output: true
-            onBack: root.pane = homePane
         }
     }
 
@@ -259,15 +290,20 @@ Item {
 
         AudioCard {
             output: false
-            onBack: root.pane = homePane
+        }
+    }
+
+    Component {
+        id: calendarPane
+
+        CalendarCard {
+            today: root.date
         }
     }
 
     Component {
         id: bluetoothPane
 
-        BluetoothCard {
-            onBack: root.pane = homePane
-        }
+        BluetoothCard {}
     }
 }

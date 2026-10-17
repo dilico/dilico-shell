@@ -29,6 +29,12 @@ Singleton {
         return Qt.formatDateTime(d, pattern).toLowerCase();
     }
 
+    // A weekday by Locale's number, 0 for Sunday, short and lower case:
+    // "mon".
+    function weekday(day: int): string {
+        return Qt.locale().dayName(day, Locale.ShortFormat).toLowerCase();
+    }
+
     // A position in a track: 187 seconds is "3:07".
     function playTime(seconds: real): string {
         const s = Math.max(0, Math.floor(seconds));

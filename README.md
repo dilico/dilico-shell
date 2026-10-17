@@ -9,7 +9,8 @@ all round and `gaps_out` below the edge (`false`, the default), or a notch that 
 from the edge and flares into it (`true`).
 
 - **Clock pill** — day, time, wifi, battery, and a dot when notifications are waiting.
-- **Dashboard** — big clock and date; lock, log out, reboot, power off; network,
+- **Dashboard** — big clock and date (click either for the month, with today marked and
+  arrows to the months either side); lock, log out, reboot, power off; network,
   bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
   by strength, with their security and signal: join one, with a password if it asks;
   a saved one opens details — internet status, access points, last used, auto-join,
@@ -97,7 +98,7 @@ config/                            Appearance, Colors, Typography, Rounding, Spa
 services/                          Audio, Battery, Bluez, Brightness, Compositor, Idle,
                                    Media, Network, Notifications, PowerMode, Radios,
                                    Session, SystemStats
-utils/                             Icons, Format
+utils/                             Icons, Format, Order, Calendar
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop
 modules/island/panels/             Dashboard

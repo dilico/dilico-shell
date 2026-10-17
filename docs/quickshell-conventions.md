@@ -174,7 +174,10 @@ Singletons of pure functions: `Icons` picks a glyph for a state, `Format` turns 
 a date into text. Each function answers from its arguments alone — no IO, no state, no
 reading a service — so the caller passes in what it shows:
 `Icons.wifi(Network.connected, Network.strength)`. A util may import `qs.config` and
-nothing else of ours.
+nothing else of ours. The system locale counts as one of its arguments, the way it does for
+`Qt.formatDateTime`: weekday names and the first day of the week come from it. Arithmetic
+a feature cannot do in a binding, such as the weeks that hold a month, belongs here too,
+even with one caller, because it is where a test can reach it.
 
 In `modules/`, a binding makes at most one choice inline. Anything more is a function: in
 `utils/` if it picks a glyph or a second file needs it, otherwise a named, typed function
@@ -377,6 +380,11 @@ Never hold `Exclusive` across something the user might do elsewhere. While it is
 window can take focus, so a workspace switch leaves Hyprland remembering a window on the
 old workspace, and the moment the surface lets go, Hyprland focuses that window and takes
 the user back to it.
+
+The dashboard's right-hand column shows one pane at a time — media and notifications, a
+list, the calendar — through one `Loader`, so only the pane on show exists. Panes are not
+panels: each is a `PaneCard`, which owns the card, the header with its way back, and where
+the pane's contents sit, and the dashboard answers every pane's `back` in one place.
 
 Once there are three panels, split each into a `Wrapper`/`Content` pair: `Wrapper` owns
 geometry, visibility and animation and holds a `Loader`; `Content` is the UI and exists
