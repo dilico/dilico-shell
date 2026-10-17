@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import qs.components
@@ -10,6 +12,11 @@ Item {
     id: root
 
     required property date date
+
+    // What the right-hand column shows: "home" for media and notifications,
+    // "network" for the wifi list. Back to home whenever the dashboard opens,
+    // since it is rebuilt each time.
+    property string pane: "home"
 
     readonly property int padding: 20
     // Tighter than the sides: the big clock's line height already adds space
@@ -31,12 +38,9 @@ Item {
     implicitHeight: layout.implicitHeight + root.topPadding + root.padding
 
     // The polled services poll while the dashboard exists, and stop with it.
+    // Media is watched by its card, which only exists on the home pane.
     Watch {
         service: Brightness
-    }
-
-    Watch {
-        service: Media
     }
 
     Watch {
@@ -114,7 +118,9 @@ Item {
                         title: "network"
                         subtitle: !Network.enabled ? "off" : (Network.activeName || "disconnected")
                         active: Network.enabled
+                        detailLabel: "show networks"
                         onClicked: Network.setEnabled(!Network.enabled)
+                        onDetailClicked: root.pane = "network"
                     }
 
                     Tile {
@@ -191,28 +197,45 @@ Item {
                 }
             }
 
-            // As tall as the controls column and no taller; notifications take
-            // whatever the media card leaves.
-            ColumnLayout {
+            // As tall as the controls column and no taller. Only the pane on
+            // show exists, so only what it shows is polled or scanned.
+            Loader {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 Layout.preferredHeight: controls.implicitHeight
                 Layout.alignment: Qt.AlignTop
-                spacing: 8
-
-                MediaCard {
-                    Layout.fillWidth: true
-                }
-
-                NotificationCard {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                }
+                sourceComponent: root.pane === "network" ? networkPane : homePane
             }
         }
 
         StatsLine {
             Layout.fillWidth: true
+        }
+    }
+
+    // Notifications take whatever the media card leaves.
+    Component {
+        id: homePane
+
+        ColumnLayout {
+            spacing: 8
+
+            MediaCard {
+                Layout.fillWidth: true
+            }
+
+            NotificationCard {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+
+    Component {
+        id: networkPane
+
+        NetworkCard {
+            onBack: root.pane = "home"
         }
     }
 }

@@ -10,7 +10,10 @@ from the edge and flares into it (`true`).
 
 - **Clock pill** — day, time, wifi, battery, and a dot when notifications are waiting.
 - **Dashboard** — big clock and date; lock, log out, reboot, power off; network,
-  bluetooth, keep-awake and airplane toggles; volume, microphone and brightness sliders
+  bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
+  by strength, with their security and signal: join one, with a password if it asks;
+  a saved one opens details — internet status, access points, last used, auto-join,
+  disconnect, forget); volume, microphone and brightness sliders
   (the icon beside a slider mutes it); power profile; now playing; notifications; a line
   of cpu, memory, temperature and battery.
 
@@ -80,7 +83,8 @@ fills it in when it exists and is empty.
 ```
 shell.qml                          the layer-shell window, its mask, the reveal and hold
 components/                        Label, Subtext, Caption, Pressable, Surface,
-                                   IconButton, Tile, Slider, Track, Segmented, Watch
+                                   IconButton, TextButton, ChevronButton, Tile, Switch, Slider,
+                                   Track, SignalBars, Segmented, TextField, Watch
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
 services/                          Audio, Battery, Bluez, Brightness, Idle, Media,

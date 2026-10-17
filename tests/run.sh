@@ -1,8 +1,9 @@
 #!/bin/sh
-# Runs the offscreen QML tests in this directory. Only components/, config/
-# and utils/ load here; services and windows need the qs binary, so they are
-# checked in the running shell instead. Extra arguments go to qmltestrunner,
-# e.g. -functions to list the tests.
+# Runs the offscreen QML tests in this directory. components/, config/, utils/
+# and the island's own widgets load here; services need the qs binary, so
+# tests/fakes/services stands in for them, and windows are checked in the
+# running shell instead. Extra arguments go to qmltestrunner, e.g. -functions
+# to list the tests.
 set -eu
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -13,10 +14,11 @@ trap 'rm -rf "$work"' EXIT
 # A qs module tree like the one Quickshell synthesizes (conventions §3): one
 # qmldir per directory, singletons known by their pragma. It is thrown away
 # afterwards; the config itself never holds a qmldir.
-for dir in components config utils; do
+module() {
+    dir=$1 source=$2
     mkdir -p "$work/qs/$dir"
-    printf 'module qs.%s\n' "$dir" > "$work/qs/$dir/qmldir"
-    for file in "$root/$dir"/[A-Z]*.qml; do
+    printf 'module qs.%s\n' "$(echo "$dir" | tr / .)" > "$work/qs/$dir/qmldir"
+    for file in "$source"/[A-Z]*.qml; do
         name=$(basename "$file" .qml)
         ln -s "$file" "$work/qs/$dir/$name.qml"
         if grep -q '^pragma Singleton' "$file"; then
@@ -25,17 +27,37 @@ for dir in components config utils; do
             echo "$name 1.0 $name.qml"
         fi >> "$work/qs/$dir/qmldir"
     done
-done
+}
 
-# Quickshell's plugin only loads inside qs. Those three directories use one
-# thing from it, Singleton, and only for properties and functions.
+for dir in components config utils modules/island/components; do
+    module "$dir" "$root/$dir"
+done
+module services "$root/tests/fakes/services"
+
+# Quickshell's plugin only loads inside qs. What loads here uses two things
+# from it: Singleton, only for properties and functions, and ScriptModel,
+# which here rebuilds its rows rather than keeping them across a change.
 mkdir -p "$work/Quickshell"
-printf 'module Quickshell\nSingleton 1.0 Singleton.qml\n' > "$work/Quickshell/qmldir"
+printf 'module Quickshell\nSingleton 1.0 Singleton.qml\nScriptModel 1.0 ScriptModel.qml\n' > "$work/Quickshell/qmldir"
 cat > "$work/Quickshell/Singleton.qml" <<'QML'
 import QtQuick
 
 QtObject {
     default property list<QtObject> data
+}
+QML
+cat > "$work/Quickshell/ScriptModel.qml" <<'QML'
+import QtQuick
+
+ListModel {
+    property var values: []
+
+    dynamicRoles: true
+    onValuesChanged: {
+        clear();
+        for (const value of values)
+            append({ modelData: value });
+    }
 }
 QML
 

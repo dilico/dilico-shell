@@ -44,7 +44,7 @@ modules/<feature>/panels/   panels that surface hosts
 services/                   singletons that own external state
 config/                     singletons that own constants
 utils/                      singletons of pure functions
-tests/                      offscreen tests of components/, config/ and utils/
+tests/                      offscreen tests, and stand-ins for the services
 docs/                       this file
 ```
 
@@ -84,7 +84,7 @@ does.
 under it, `Caption` the smallest metadata. Override colour or weight where the text is
 something else. A new size in `Typography` arrives together with the role component that
 uses it; a glyph (`iconSize`) and the big clock (`clockSize`) are the only sizes set
-directly.
+directly, besides a text input's `bodySize`, since a `TextInput` cannot be a `Label`.
 
 ### `modules/<feature>/`
 
@@ -245,10 +245,11 @@ narrowest possible scope, with the reason in a comment.
 
 `tests/run.sh` must pass too. It runs every `tests/tst_*.qml` offscreen in `qmltestrunner`,
 against a throwaway `qs` tree it builds outside the config (so the no-`qmldir` rule still
-holds) and a stand-in for Quickshell's `Singleton`. Only `components/`, `config/` and
-`utils/` load that way: services and windows need the `qs` binary, so they are checked in
-the running shell. A fix for a bug those three directories can show comes with a test that
-fails without it — check that it does.
+holds) and a stand-in for Quickshell's `Singleton`. `components/`, `config/`, `utils/` and
+the island's widgets load that way. Services need the `qs` binary, so `tests/fakes/services/`
+holds a stand-in for each one a tested widget reads, with the same interface, recording what
+it is asked; the real services and the windows are checked in the running shell. A fix for
+a bug that loads here comes with a test that fails without it — check that it does.
 
 ## 4. Singletons
 
@@ -351,9 +352,14 @@ owns its inner padding; the window owns where it sits.
 
 **A layer surface takes keyboard focus only while something there wants keys.** Default to
 `WlrKeyboardFocus.None`. While a form with no text field is open — the dashboard, for
-`Escape` — use `OnDemand`: the keyboard comes over on the first click inside it. Use
-`Exclusive` only for as long as a text field is open, driven by a property the panel
-exposes. A surface left focusable steals the keyboard from the focused window on every
+`Escape` — use `OnDemand`: the keyboard comes over on the first click inside it. A text
+field inside such a modal surface stays `OnDemand` too: the click that opens the field is a
+click inside the surface, so the keyboard is already there, and while the backdrop is up no
+click can land anywhere else to take it away. Use `Exclusive` only for a text field on a
+surface that does not hold the screen, and only for as long as it is open, driven by a
+property the panel exposes. A text field takes `Escape` for itself before any shortcut
+sees it (`Keys.onShortcutOverride`), so `Escape` backs out of the field before it closes
+the surface. A surface left focusable steals the keyboard from the focused window on every
 click; one left exclusive holds the keyboard hostage, so every such form needs an escape
 that cannot be missed — `Escape`, a visible cancel, and a timeout on whatever it is waiting
 for. *(Rewritten: the first version allowed only None and Exclusive.)*

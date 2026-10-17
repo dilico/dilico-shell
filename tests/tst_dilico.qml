@@ -40,6 +40,59 @@ Item {
         value: 0.5
     }
 
+    Tile {
+        id: tile
+
+        property int toggles: 0
+        property int details: 0
+
+        x: 200
+        y: 50
+        width: 170
+        detailLabel: "more"
+        onClicked: tile.toggles++
+        onDetailClicked: tile.details++
+    }
+
+    Switch {
+        id: toggle
+
+        property int clicks: 0
+
+        x: 200
+        y: 120
+        onClicked: toggle.clicks++
+    }
+
+    TextField {
+        id: field
+
+        property int accepts: 0
+        property int cancels: 0
+
+        y: 150
+        width: 150
+        onAccepted: field.accepts++
+        onCancelled: field.cancels++
+    }
+
+    // Would close the dashboard; must not see an Escape the field takes.
+    Shortcut {
+        id: escapeShortcut
+
+        property int fired: 0
+
+        sequence: "Escape"
+        onActivated: escapeShortcut.fired++
+    }
+
+    SignalBars {
+        id: bars
+
+        y: 190
+        lit: 2
+    }
+
     QtObject {
         id: polled
 
@@ -123,6 +176,42 @@ Item {
             compare(pressable.clicks, 2, "inert when not interactive");
         }
 
+        function test_tile_chevronIsSeparate() {
+            tile.toggles = 0;
+            tile.details = 0;
+            mouseClick(tile, tile.width - 10, tile.height / 2);
+            compare(tile.details, 1);
+            compare(tile.toggles, 0, "the chevron does not toggle");
+            mouseClick(tile, 40, tile.height / 2);
+            compare(tile.toggles, 1);
+            compare(tile.details, 1, "the toggle does not open details");
+        }
+
+        function test_switch_leavesStateToOwner() {
+            mouseClick(toggle);
+            compare(toggle.clicks, 1);
+            verify(!toggle.checked, "displays checked, never writes it");
+        }
+
+        function test_textField_keys() {
+            field.focusInput();
+            keyClick(Qt.Key_X);
+            compare(field.text, "x");
+            keyClick(Qt.Key_Return);
+            compare(field.accepts, 1);
+            escapeShortcut.fired = 0;
+            keyClick(Qt.Key_Escape);
+            compare(field.cancels, 1);
+            compare(escapeShortcut.fired, 0, "Escape stays with the field");
+            field.clear();
+        }
+
+        function test_signalBars() {
+            compare(bars.children[0].color, Colors.textMid);
+            compare(bars.children[1].color, Colors.textMid);
+            compare(bars.children[2].color, Colors.outline);
+        }
+
         function test_format() {
             compare(Format.percent(0.427), "43%");
             compare(Format.playTime(187), "3:07");
@@ -131,9 +220,18 @@ Item {
             compare(Format.duration(65 * 60), "1h05m");
             compare(Format.time(new Date(2026, 9, 16, 9, 41)), "09:41");
             compare(Format.date(new Date(2026, 9, 16), "ddd dd MMMM"), "fri 16 october");
+            compare(Format.ago(1000, 1030), "just now");
+            compare(Format.ago(1000, 1000 + 5 * 60), "5m ago");
+            compare(Format.ago(1000, 1000 + 3 * 3600), "3h ago");
+            compare(Format.ago(1000, 1000 + 2 * 86400), "2d ago");
         }
 
         function test_icons() {
+            compare(Icons.bars(0), 1);
+            compare(Icons.bars(0.25), 2);
+            compare(Icons.bars(0.5), 3);
+            compare(Icons.bars(0.75), 4);
+            compare(Icons.bars(1), 4);
             compare(Icons.wifi(false, 1), Glyphs.wifiOff);
             compare(Icons.wifi(true, 0.8), Glyphs.wifi4);
             compare(Icons.wifi(true, 0.1), Glyphs.wifi1);

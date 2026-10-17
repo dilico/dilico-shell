@@ -8,11 +8,17 @@ import qs.config
 Singleton {
     id: root
 
+    // How many of four bars a signal fills, so the pill's glyph and the
+    // network list's bars agree. strength: 0..1
+    function bars(strength: real): int {
+        return Math.max(1, Math.min(4, Math.floor(strength * 4) + 1));
+    }
+
     // strength: 0..1
     function wifi(connected: bool, strength: real): string {
         if (!connected)
             return Glyphs.wifiOff;
-        return strength >= 0.75 ? Glyphs.wifi4 : strength >= 0.5 ? Glyphs.wifi3 : strength >= 0.25 ? Glyphs.wifi2 : Glyphs.wifi1;
+        return [Glyphs.wifi1, Glyphs.wifi2, Glyphs.wifi3, Glyphs.wifi4][root.bars(strength) - 1];
     }
 
     function bluetooth(enabled: bool, connected: int): string {

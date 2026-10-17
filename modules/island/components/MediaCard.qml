@@ -16,6 +16,11 @@ Item {
     // Down to the art, or to the progress line under it, and the padding again.
     implicitHeight: (root.showProgress ? progress.y + progress.height : art.y + art.height) + Spacing.card
 
+    // Position is only re-read while the card is on show.
+    Watch {
+        service: Media
+    }
+
     Surface {
         anchors.fill: parent
     }

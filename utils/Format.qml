@@ -30,6 +30,19 @@ Singleton {
         return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
     }
 
+    // How long ago a moment was, in its largest whole unit: "just now",
+    // "5m ago", "3h ago", "2d ago". Both in seconds since the epoch.
+    function ago(then: real, now: real): string {
+        const s = Math.max(0, now - then);
+        if (s < 60)
+            return "just now";
+        if (s < 3600)
+            return `${Math.floor(s / 60)}m ago`;
+        if (s < 86400)
+            return `${Math.floor(s / 3600)}h ago`;
+        return `${Math.floor(s / 86400)}d ago`;
+    }
+
     // A span to the nearest minute: "45m", "1h05m".
     function duration(seconds: real): string {
         const m = Math.round(seconds / 60);

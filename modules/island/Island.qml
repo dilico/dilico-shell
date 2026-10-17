@@ -87,8 +87,10 @@ Item {
         onActivated: root.close()
     }
 
+    // Held while a network password is asked for: typing it needs no pointer
+    // on the island, and a backdrop click still closes it.
     Timer {
-        running: root.open && !overIsland.hovered
+        running: root.open && !overIsland.hovered && !Network.needsPassword
         interval: 30000
         onTriggered: root.close()
     }

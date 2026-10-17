@@ -9,11 +9,6 @@ import qs.utils
 Item {
     id: root
 
-    // How far the list sits in from the card's edge. A row's hover ground
-    // fills that inset; its text steps back in to the card's padding, so it
-    // lines up with the header and the media card above.
-    readonly property int listInset: 6
-
     function timeOf(notification: var): string {
         const t = Notifications.arrivedAt(notification);
         return t > 0 ? Format.time(new Date(t)) : "";
@@ -38,26 +33,17 @@ Item {
         text: "notifications"
     }
 
-    Pressable {
+    TextButton {
         id: clear
 
         anchors.right: parent.right
         anchors.rightMargin: Spacing.card
         anchors.verticalCenter: header.verticalCenter
-        implicitWidth: clearText.implicitWidth
-        implicitHeight: clearText.implicitHeight
         visible: Notifications.count > 0
-
-        Accessible.name: "clear notifications"
+        text: "clear"
+        accessibleName: "clear notifications"
 
         onClicked: Notifications.clear()
-
-        Subtext {
-            id: clearText
-
-            text: "clear"
-            color: clear.hovered ? Colors.text : Colors.textDim
-        }
     }
 
     ListView {
@@ -65,7 +51,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: root.listInset
+        anchors.margins: Spacing.list
         anchors.topMargin: 6
         clip: true
         spacing: 2
@@ -94,7 +80,7 @@ Item {
 
             Column {
                 anchors.left: parent.left
-                anchors.leftMargin: Spacing.card - root.listInset
+                anchors.leftMargin: Spacing.card - Spacing.list
                 anchors.right: time.left
                 anchors.rightMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
@@ -120,7 +106,7 @@ Item {
                 id: time
 
                 anchors.right: parent.right
-                anchors.rightMargin: Spacing.card - root.listInset
+                anchors.rightMargin: Spacing.card - Spacing.list
                 anchors.top: parent.top
                 anchors.topMargin: 8
                 text: root.timeOf(entry.modelData)
