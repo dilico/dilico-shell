@@ -2,7 +2,7 @@
 
 A [Quickshell](https://quickshell.org) top island for Hyprland. Hidden until the pointer
 touches the top edge; then a small black clock drops down. Click it and it grows into a
-dashboard.
+dashboard. Every monitor has its own, which shows and opens independently of the others.
 
 Two shapes, chosen by `attached` in `config/Appearance.qml`: a floating pill, rounded
 all round and `gaps_out` below the edge (`false`, the default), or a notch that hangs
@@ -83,7 +83,8 @@ fills it in when it exists and is empty.
 ## Layout
 
 ```
-shell.qml                          the layer-shell window, its mask, the reveal and hold
+shell.qml                          a layer-shell window per screen, its mask, the reveal
+                                   and hold
 components/                        Label, Subtext, Caption, Pressable, Surface,
                                    IconButton, TextButton, ChevronButton, Tile, Switch, Slider,
                                    Track, SignalBars, Segmented, TextField, Watch

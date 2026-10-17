@@ -303,7 +303,13 @@ flow back into the same control without the two fighting.
 
 ## 6. Windows and panels
 
-**One layer-shell `PanelWindow` per screen.** Panels are ordinary `Item`s inside it, never
+**One layer-shell `PanelWindow` per screen.** `shell.qml` makes them with
+`Variants { model: Quickshell.screens }`, each taking `required property ShellScreen modelData`
+for its `screen`, so a screen plugged in gets its window and one unplugged takes its away.
+Each screen's surface is on its own: everything about how it shows — hover, reveal, open or
+closed, which pane — lives in that window, and never in a singleton. What it shows comes from
+the services, shared by every screen, and a service's one-at-a-time state (the one network
+being joined) is one for all of them. Panels are ordinary `Item`s inside it, never
 windows of their own. A second window is justified only when the content must outlive or
 escape the bar — a lock screen, a standalone settings window.
 
@@ -425,7 +431,6 @@ before.
 | Deferred | Build it when |
 |---|---|
 | Splitting a panel host into a `Wrapper`/`Content` pair (§6) | A third panel exists. At one, the indirection costs more than it saves |
-| `Variants { model: Quickshell.screens }`, delegate taking `required property ShellScreen modelData` | The bar should appear on a second monitor |
 | User config as JSON via `FileView` + `JsonAdapter`, with a version number and migrations | Someone other than the author configures this. Constants in `config/` singletons are correct until then |
 | `IpcHandler` for compositor-driven commands | A keybind must command the shell. Observation is preferred while it suffices (§8) |
 | A committed lint and format check in CI | More than one person commits |
