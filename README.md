@@ -19,7 +19,9 @@ from the edge and flares into it (`true`).
   connect automatically, disconnect, forget); volume, microphone and brightness sliders
   (the icon beside a slider mutes it; the `>` on volume and microphone lists the outputs
   or inputs with something plugged in, to switch to another); power profile; now playing; notifications; a line
-  of cpu, memory, temperature and battery.
+  of cpu, memory, temperature and battery (click cpu or mem for the heaviest processes,
+  sorted by it; the column headings switch the sort; click one to end it, or kill it if it
+  will not go).
 - **Volume pill** — when the volume changes (the volume and mute keys, or anything else
   that turns the output up, down or off), the island drops down with the level for a
   moment, on the screen you are on. Not while the dashboard is open, whose slider shows it.
@@ -96,8 +98,8 @@ components/                        Label, Subtext, Caption, Pressable, Surface,
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
 services/                          Audio, Battery, Bluez, Brightness, Compositor, Idle,
-                                   Media, Network, Notifications, PowerMode, Radios,
-                                   Session, SystemStats
+                                   Media, Network, Notifications, PowerMode, Processes,
+                                   Radios, Session, SystemStats
 utils/                             Icons, Format, Order, Calendar
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop

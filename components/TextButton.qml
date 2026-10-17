@@ -10,6 +10,9 @@ Item {
     property string text: ""
     // What it does, for assistive tech, when the word alone does not say.
     property string accessibleName: root.text
+    // Full colour at rest too: the one of a set in effect, such as the column
+    // a list is sorted by.
+    property bool selected: false
     readonly property alias hovered: hit.hovered
 
     signal clicked()
@@ -32,6 +35,6 @@ Item {
         id: label
 
         text: root.text
-        color: root.hovered ? Colors.text : Colors.textDim
+        color: root.selected || root.hovered ? Colors.text : Colors.textDim
     }
 }

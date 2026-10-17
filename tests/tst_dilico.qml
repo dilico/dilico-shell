@@ -216,6 +216,9 @@ Item {
             compare(Format.percent(0.427), "43%");
             compare(Format.percentOrOff(false, 0.59), "59%");
             compare(Format.percentOrOff(true, 0.59), "off");
+            compare(Format.percentTenths(0.0234), "2.3%");
+            compare(Format.size(340 * 1048576), "340m");
+            compare(Format.size(1.25 * 1073741824), "1.3g");
             compare(Format.playTime(187), "3:07");
             compare(Format.playTime(-3), "0:00");
             compare(Format.duration(45 * 60), "45m");

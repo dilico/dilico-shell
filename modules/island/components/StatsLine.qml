@@ -8,6 +8,8 @@ import qs.services
 import qs.utils
 // qmllint enable unused-imports
 
+// The line along the dashboard's foot. The cpu and memory figures open the
+// heaviest processes, sorted by that figure.
 Item {
     id: root
 
@@ -19,6 +21,9 @@ Item {
             return Battery.timeToFull > 0 ? `${pct} · full in ${Format.duration(Battery.timeToFull)}` : `${pct} · charging`;
         return Battery.timeToEmpty > 0 ? `${pct} · ${Format.duration(Battery.timeToEmpty)}` : pct;
     }
+
+    // "cpu" or "memory".
+    signal processesClicked(string by)
 
     implicitWidth: 600
     implicitHeight: 30
@@ -38,13 +43,19 @@ Item {
         anchors.verticalCenterOffset: 1
         spacing: 18
 
-        Caption {
+        Figure {
+            objectName: "cpu"
             text: SystemStats.cpu < 0 ? "cpu --" : `cpu ${Format.percent(SystemStats.cpu)}`
+            Accessible.name: "processes by cpu"
+            onClicked: root.processesClicked("cpu")
         }
 
-        Caption {
+        Figure {
+            objectName: "memory"
             visible: SystemStats.memTotal > 0
             text: `mem ${SystemStats.memUsed.toFixed(1)}/${Math.round(SystemStats.memTotal)}g`
+            Accessible.name: "processes by memory"
+            onClicked: root.processesClicked("memory")
         }
 
         Caption {
@@ -64,5 +75,35 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 1
         text: "arch · hyprland"
+    }
+
+    // A figure to click, built as TextButton is at the caption's size: it
+    // brightens under the pointer, and the hit area reaches a little past it.
+    component Figure: Item {
+        id: figure
+
+        property alias text: label.text
+
+        signal clicked()
+
+        implicitWidth: label.implicitWidth
+        implicitHeight: label.implicitHeight
+
+        Pressable {
+            id: hit
+
+            anchors.fill: parent
+            anchors.margins: -6
+
+            Accessible.name: figure.Accessible.name
+
+            onClicked: figure.clicked()
+        }
+
+        Caption {
+            id: label
+
+            color: hit.hovered ? Colors.text : Colors.textDim
+        }
     }
 }

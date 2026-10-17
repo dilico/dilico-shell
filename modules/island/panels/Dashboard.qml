@@ -14,9 +14,11 @@ Item {
     required property date date
 
     // What the right-hand column shows: media and notifications, one of the
-    // lists, or the calendar. Back to home whenever the dashboard opens, since
-    // it is rebuilt each time.
+    // lists, the calendar or the processes. Back to home whenever the
+    // dashboard opens, since it is rebuilt each time.
     property Component pane: homePane
+    // What the processes pane is sorted by: "cpu" or "memory".
+    property string processSort: "cpu"
 
     readonly property int padding: 20
     // Tighter than the sides: the big clock's line height already adds space
@@ -32,6 +34,17 @@ Item {
         if (n === 0)
             return "on";
         return n === 1 ? Bluez.deviceName(Bluez.connected[0]) : `${n} connected`;
+    }
+
+    // A figure in the stats line opens the processes sorted by it, and the
+    // same figure again closes them.
+    function showProcesses(by: string): void {
+        if (root.pane === processesPane && root.processSort === by) {
+            root.pane = homePane;
+            return;
+        }
+        root.processSort = by;
+        root.pane = processesPane;
     }
 
     implicitWidth: 780
@@ -240,6 +253,7 @@ Item {
 
         StatsLine {
             Layout.fillWidth: true
+            onProcessesClicked: by => root.showProcesses(by)
         }
     }
 
@@ -298,6 +312,15 @@ Item {
 
         CalendarCard {
             today: root.date
+        }
+    }
+
+    Component {
+        id: processesPane
+
+        ProcessCard {
+            sortBy: root.processSort
+            onSortPicked: by => root.processSort = by
         }
     }
 

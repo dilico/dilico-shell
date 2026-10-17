@@ -13,6 +13,19 @@ Singleton {
         return `${Math.round(fraction * 100)}%`;
     }
 
+    // 0..1 as a percentage to a tenth, for shares mostly under one per cent:
+    // 0.0234 is "2.3%".
+    function percentTenths(fraction: real): string {
+        return `${(fraction * 100).toFixed(1)}%`;
+    }
+
+    // Bytes as megabytes under a gigabyte, gigabytes to a tenth above:
+    // "340m", "1.2g".
+    function size(bytes: real): string {
+        const gib = bytes / 1073741824;
+        return gib < 1 ? `${Math.round(bytes / 1048576)}m` : `${gib.toFixed(1)}g`;
+    }
+
     // 0..1 as a percentage, or "off" when muted: 0.59 is "59%".
     function percentOrOff(muted: bool, fraction: real): string {
         return muted ? "off" : root.percent(fraction);
