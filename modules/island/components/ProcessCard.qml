@@ -48,9 +48,11 @@ PaneCard {
 
     // A list held in one order would be wrong in the other.
     onSortByChanged: root.picked = 0
-    // Nothing is left to offer once the process has gone.
+    // Nothing is left to offer once the process has gone. Taken back on the
+    // next turn: rows depends on picked, so changing it while rows is still
+    // reporting its change would loop.
     onRowsChanged: if (root.picked !== 0 && !root.rows.some(p => p.pid === root.picked))
-        root.picked = 0
+        Qt.callLater(() => root.picked = 0)
 
     Watch {
         service: Processes

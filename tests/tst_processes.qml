@@ -112,13 +112,14 @@ Item {
         }
 
         function test_aProcessThatExitsDropsOut() {
+            failOnWarning(/Binding loop/);
             mouseClick(findChild(row(0), "pick"));
             Processes.processes = Processes.processes.filter(p => p.pid !== 29);
             verify(!names().includes("proc29"), "gone from the held order");
             verify(row(0).offered, "the offer stays on the one picked");
             Processes.processes = Processes.processes.filter(p => p.pid !== 30);
             verify(!names().includes("proc30"));
-            compare(card.picked, 0, "nothing left to offer");
+            tryCompare(card, "picked", 0, 1000, "nothing left to offer");
         }
 
         function test_sortingTakesTheOfferBack() {
