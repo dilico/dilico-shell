@@ -12,7 +12,8 @@ Singleton {
     // How many things are showing it, each through a Watch.
     property int watchers: 0
 
-    readonly property bool capsLock: root.ledText.trim() !== "" && root.ledText.trim() !== "0"
+    // Off when there is no light to read: "" is not a number.
+    readonly property bool capsLock: parseInt(root.ledText) > 0
 
     // The light's brightness file, found by name: the input number in it is
     // not stable across boots. "" until found, or if there is none.

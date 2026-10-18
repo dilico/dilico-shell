@@ -46,6 +46,9 @@ Singleton {
     readonly property string chevronLeft: String.fromCodePoint(0xf0141)
     readonly property string chevronRight: String.fromCodePoint(0xf0142)
     readonly property string search: String.fromCodePoint(0xf0349)
+    // The zsh prompt's arrow, and the dot a password shows per character.
+    readonly property string prompt: String.fromCodePoint(0x276f)
+    readonly property string passwordDot: String.fromCodePoint(0x2022)
     readonly property string logout: String.fromCodePoint(0xf0343)
     readonly property string restart: String.fromCodePoint(0xf0709)
     readonly property string power: String.fromCodePoint(0xf0425)

@@ -5,7 +5,7 @@ import qs.config
 // The password as a terminal prompt: the user's name, "❯ password:", a dot
 // for each character typed and a block cursor, coloured as the zsh prompt
 // is. Escape empties it.
-Item {
+Row {
     id: root
 
     property string user: ""
@@ -23,59 +23,6 @@ Item {
         input.clear();
     }
 
-    implicitWidth: line.implicitWidth
-    implicitHeight: line.implicitHeight
-
-    Row {
-        id: line
-
-        Label {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.user
-            font.pixelSize: Typography.lockPromptSize
-        }
-
-        Label {
-            anchors.verticalCenter: parent.verticalCenter
-            text: " ❯ password: "
-            color: Colors.textDim
-            font.pixelSize: Typography.lockPromptSize
-        }
-
-        // Its own cursor is hidden: the block after it stands in, the way a
-        // terminal's does.
-        TextInput {
-            id: input
-
-            objectName: "password"
-            anchors.verticalCenter: parent.verticalCenter
-            echoMode: TextInput.Password
-            passwordCharacter: "•"
-            readOnly: root.busy
-            cursorDelegate: Item {}
-            color: Colors.textDim
-            font.family: Typography.fontFamily
-            font.pixelSize: Typography.lockPromptSize
-            font.letterSpacing: 2
-
-            Accessible.role: Accessible.EditableText
-            Accessible.name: "password"
-            Accessible.passwordEdit: true
-
-            onAccepted: root.accepted()
-            Keys.onEscapePressed: input.clear()
-        }
-
-        Rectangle {
-            id: block
-
-            anchors.verticalCenter: parent.verticalCenter
-            width: Math.round(Typography.lockPromptSize * 0.6)
-            height: Math.round(Typography.lockPromptSize * 1.2)
-            color: Colors.text
-        }
-    }
-
     // A terminal's blink: on and off, not a fade. Steady while checking, as
     // a shell that is busy shows no prompt to type at.
     Timer {
@@ -84,5 +31,51 @@ Item {
         repeat: true
         onTriggered: block.visible = !block.visible
         onRunningChanged: block.visible = true
+    }
+
+    Label {
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.user
+        font.pixelSize: Typography.lockPromptSize
+    }
+
+    Label {
+        anchors.verticalCenter: parent.verticalCenter
+        text: ` ${Glyphs.prompt} password: `
+        color: Colors.textDim
+        font.pixelSize: Typography.lockPromptSize
+    }
+
+    // Its own cursor is hidden: the block after it stands in, the way a
+    // terminal's does.
+    TextInput {
+        id: input
+
+        objectName: "password"
+        anchors.verticalCenter: parent.verticalCenter
+        echoMode: TextInput.Password
+        passwordCharacter: Glyphs.passwordDot
+        readOnly: root.busy
+        cursorDelegate: Item {}
+        color: Colors.textDim
+        font.family: Typography.fontFamily
+        font.pixelSize: Typography.lockPromptSize
+        font.letterSpacing: 2
+
+        Accessible.role: Accessible.EditableText
+        Accessible.name: "password"
+        Accessible.passwordEdit: true
+
+        onAccepted: root.accepted()
+        Keys.onEscapePressed: input.clear()
+    }
+
+    Rectangle {
+        id: block
+
+        anchors.verticalCenter: parent.verticalCenter
+        width: Math.round(Typography.lockPromptSize * 0.6)
+        height: Math.round(Typography.lockPromptSize * 1.2)
+        color: Colors.text
     }
 }

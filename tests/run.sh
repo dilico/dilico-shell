@@ -1,9 +1,9 @@
 #!/bin/sh
-# Runs the offscreen QML tests in this directory. components/, config/, utils/
-# and the island's own widgets load here; services need the qs binary, so
-# tests/fakes/services stands in for them, and windows are checked in the
-# running shell instead. Extra arguments go to qmltestrunner, e.g. -functions
-# to list the tests.
+# Runs the offscreen QML tests in this directory. components/, config/, utils/,
+# the island's widgets and panels, and the lock screen load here; services
+# need the qs binary, so tests/fakes/services stands in for them, and windows
+# are checked in the running shell instead. Extra arguments go to
+# qmltestrunner, e.g. -functions to list the tests.
 set -eu
 
 root=$(cd "$(dirname "$0")/.." && pwd)

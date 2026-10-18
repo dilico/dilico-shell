@@ -26,7 +26,6 @@ Item {
             Auth.busy = false;
             Auth.failure = "";
             Auth.calls = [];
-            Battery.available = true;
             Keyboard.capsLock = false;
             Network.enabled = true;
             Network.connected = true;

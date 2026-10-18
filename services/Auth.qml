@@ -40,8 +40,11 @@ Singleton {
         return "could not check the password";
     }
 
+    // The account checked is the one named on screen.
     PamContext {
         id: pam
+
+        user: root.user
 
         onResponseRequiredChanged: {
             if (!pam.responseRequired)
@@ -68,7 +71,7 @@ Singleton {
 
         onError: {
             root.pending = "";
-            root.failure = "could not check the password";
+            root.failure = root.failureText(PamResult.Error);
         }
     }
 }

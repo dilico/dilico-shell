@@ -95,11 +95,8 @@ does.
 under it, `Caption` the smallest metadata. Override colour or weight where the text is
 something else. A new size in `Typography` arrives together with the role component that
 uses it; a glyph (`iconSize`), the big clock (`clockSize`) and the lock screen's clock,
-date and password (`lock*Size`, one composition drawn at one size) are the only sizes set
+date and prompt (`lock*Size`, set together as one composition) are the only sizes set
 directly, besides a text input's `bodySize`, since a `TextInput` cannot be a `Label`.
-
-An image a feature draws lives beside the file that draws it and is named relative to it
-(`source: "grain.png"`), the way a component is found beside its user.
 
 ### `modules/<feature>/`
 
@@ -117,6 +114,9 @@ belongs to the surface that hosts it — `modules/bar/panels/VolumePanel.qml` �
 domain it speaks for lives in `services/Audio.qml`. Splitting by subject instead produces
 `modules/bar` importing `modules/volume`, which is the cross-feature import this rule
 exists to prevent. The service is what the two share.
+
+An image a feature draws lives beside the file that draws it and is named relative to it
+(`source: "grain.png"`), the way a component is found beside its user.
 
 Feature-local singletons are fine (`modules/<feature>/services/`) when the state genuinely
 belongs to that feature alone. Prefer this over growing the global `services/`.
@@ -261,12 +261,12 @@ qmllint -I "$(sed -n 's/^buildDir="\(.*\)"/\1/p' .qmlls.ini)" \
 
 The include path is only populated while `.qmlls.ini` exists; Quickshell fills an empty
 one in on the next launch. It is the shell's, and holds only what the shell imports, so the
-lock (and the services only it uses) is linted against its own, which its preview writes
+lock's own files are linted against the lock's, which its preview writes
 (`DILICO_LOCK_PREVIEW=1 qs -p lock.qml -d`, then `qs kill -p lock.qml`):
 
 ```
 qmllint -I "/run/user/$(id -u)/quickshell/vfs/$(qs log -p lock.qml | sed -n 's/.*Shell ID: "\([0-9a-f]*\)".*/\1/p' | head -1)" \
-    lock.qml modules/lock/*.qml modules/lock/components/*.qml services/*.qml
+    lock.qml modules/lock/*.qml modules/lock/components/*.qml
 ```
 
 A `// qmllint disable <rule>` is allowed only for a verified false positive, on the
@@ -274,8 +274,8 @@ narrowest possible scope, with the reason in a comment.
 
 `tests/run.sh` must pass too. It runs every `tests/tst_*.qml` offscreen in `qmltestrunner`,
 against a throwaway `qs` tree it builds outside the config (so the no-`qmldir` rule still
-holds) and a stand-in for Quickshell's `Singleton`. `components/`, `config/`, `utils/` and
-the island's widgets load that way. Services need the `qs` binary, so `tests/fakes/services/`
+holds) and a stand-in for Quickshell's `Singleton`. `components/`, `config/`, `utils/`, the
+island's widgets and panels, and the lock screen load that way. Services need the `qs` binary, so `tests/fakes/services/`
 holds a stand-in for each one a tested widget reads, with the same interface, recording what
 it is asked; the real services and the windows are checked in the running shell. A fix for
 a bug that loads here comes with a test that fails without it — check that it does.
@@ -443,7 +443,8 @@ slot, stage the opacities so the first reaches 0 before the second leaves 0.
 ## 8. Compositor integration
 
 Hyprland-side configuration belongs in `~/.config/hypr/hyprland.lua` (the Lua parser is
-live on this machine; `hyprctl keyword` does not work — use `hyprctl eval` with `hl.*`).
+live on this machine; `hyprctl keyword` does not work — use `hyprctl eval` with `hl.*`, or
+`hyprctl dispatch` with an `hl.dsp.*` call).
 
 Keep the division clean: **the compositor owns key bindings and window rules; the shell
 observes and displays.** Volume keys run `wpctl`; the shell notices the resulting PipeWire

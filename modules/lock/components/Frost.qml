@@ -3,7 +3,8 @@ import QtQuick.Shapes
 import qs.config
 
 // Dark frost, opaque: a lighter corner fading into the ground, and a fine
-// grain over both, so it reads as frosted glass rather than flat paint.
+// grain over both, so it reads as frosted glass rather than flat paint. The
+// gradient carries its last colour to the edges, so it paints the ground too.
 Item {
     id: root
 
@@ -13,19 +14,11 @@ Item {
     readonly property real glowY: root.height * 0.25
     readonly property real glowRadius: root.width * 0.5
 
-    Rectangle {
-        anchors.fill: parent
-        color: Colors.lockGround
-    }
-
     Shape {
         anchors.fill: parent
 
         ShapePath {
             strokeColor: "transparent"
-            strokeWidth: 0
-            startX: 0
-            startY: 0
 
             fillGradient: RadialGradient {
                 centerX: root.glowX
@@ -45,19 +38,9 @@ Item {
                 }
             }
 
-            PathLine {
-                x: root.width
-                y: 0
-            }
-
-            PathLine {
-                x: root.width
-                y: root.height
-            }
-
-            PathLine {
-                x: 0
-                y: root.height
+            PathRectangle {
+                width: root.width
+                height: root.height
             }
         }
     }

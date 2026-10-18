@@ -37,10 +37,7 @@ ShellRoot {
         WlSessionLockSurface {
             color: Colors.lockGround
 
-            LockScreen {
-                anchors.fill: parent
-                date: clock.date
-            }
+            Face {}
         }
     }
 
@@ -83,10 +80,13 @@ ShellRoot {
             exclusiveZone: -1
             color: Colors.lockGround
 
-            LockScreen {
-                anchors.fill: parent
-                date: clock.date
-            }
+            Face {}
         }
+    }
+
+    // The same on a lock surface and in the preview.
+    component Face: LockScreen {
+        anchors.fill: parent
+        date: clock.date
     }
 }
