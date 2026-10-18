@@ -29,7 +29,7 @@ module() {
     done
 }
 
-for dir in components config utils modules/island/components; do
+for dir in components config utils modules/island/components modules/island/panels; do
     module "$dir" "$root/$dir"
 done
 module services "$root/tests/fakes/services"

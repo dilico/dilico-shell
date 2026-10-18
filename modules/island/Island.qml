@@ -10,21 +10,29 @@ import qs.services
 import qs.utils
 
 // The black shape at the top edge: a clock pill at rest, the dashboard once
-// clicked, and the volume for a moment after it changes. Fills the window; the
-// window's mask decides which parts of it take input.
+// clicked, the launcher from its key, and the volume for a moment after it
+// changes. Fills the window; the window's mask decides which parts of it take
+// input.
 Item {
     id: root
 
     // Whether the clock is wanted on screen. The window decides, from hover.
     required property bool shown
     // Whether this is the screen the user is on, the one a change of volume
-    // shows on.
+    // shows on and the launcher's key opens.
     required property bool focused
     required property date date
     property bool open: false
+    // What the island grows into: "dashboard" from a click on the pill,
+    // "launcher" from its key. Kept while it closes, so the panel shrinks
+    // away rather than turning into the other. A third panel is the point to
+    // split them into Wrapper/Content (conventions §6).
+    property string panel: "dashboard"
+    readonly property bool typing: root.open && root.panel === "launcher"
 
     // For a moment after the volume changes, the pill comes down with it. Not
-    // over the dashboard, whose slider already shows it.
+    // over an open panel: the dashboard's slider already shows it, and the
+    // launcher has nothing to do with it.
     readonly property bool announcing: announceTimer.running
 
     // The volume rather than the clock in the pill. Set by a change; cleared
@@ -37,7 +45,7 @@ Item {
     // showing what it came down for.
     property real volumeProgress: root.volumeShown ? 1 : 0
 
-    // 0 is the pill, 1 the dashboard. Animated by the state below; every size
+    // 0 is the pill, 1 the open panel. Animated by the state below; every size
     // and opacity derives from it.
     property real progress: 0
 
@@ -47,10 +55,10 @@ Item {
     readonly property real volumeWidth: volumeLevel.implicitWidth + root.pillPadding
     readonly property real pillWidth: Math.round(root.clockWidth + (root.volumeWidth - root.clockWidth) * root.volumeProgress)
 
-    // The dashboard is loaded whenever progress is above 0, so these are only
+    // The panel is loaded whenever progress is above 0, so these are only
     // ever 0 when progress is too and the size math never reads them.
-    readonly property real formWidth: dashboard.implicitWidth
-    readonly property real formHeight: dashboard.implicitHeight
+    readonly property real formWidth: form.implicitWidth
+    readonly property real formHeight: form.implicitHeight
 
     // How the island meets the top edge; see config/Appearance. A notch sits on
     // the edge and reaches one fillet past each side; a pill floats `gap`
@@ -65,7 +73,7 @@ Item {
 
     // Where the resting pill takes input, measured from the top edge, so it
     // covers a notch's fillets and the gap above a pill. Only the clock: while
-    // the dashboard is open or animating, the window takes the whole screen,
+    // a panel is open or animating, the window takes the whole screen,
     // and the volume takes none, so it never resizes this under the pointer.
     readonly property rect hitArea: Qt.rect(Math.round((root.width - root.clockWidth) / 2) - root.flare, 0, root.clockWidth + root.flare * 2, root.gap + root.pillHeight)
 
@@ -103,7 +111,20 @@ Item {
     }
 
     function toggle(): void {
+        if (!root.open)
+            root.panel = "dashboard";
         root.open = !root.open;
+    }
+
+    // The key again closes it; over the dashboard, it turns into the
+    // launcher.
+    function toggleLauncher(): void {
+        if (root.typing) {
+            root.close();
+            return;
+        }
+        root.panel = "launcher";
+        root.open = true;
     }
 
     function close(): void {
@@ -141,12 +162,31 @@ Item {
     }
 
     // Escape reaches this once the dashboard has the keyboard, which it gets on
-    // demand from the first click inside it. The timeout closes a forgotten
-    // dashboard, which would otherwise sit over the windows and swallow clicks.
+    // demand from the first click inside it; the launcher's field takes Escape
+    // itself. The timeout closes a forgotten panel, which would otherwise sit
+    // over the windows and swallow clicks.
     Shortcut {
         sequence: "Escape"
         enabled: root.open
         onActivated: root.close()
+    }
+
+    // A workspace switch takes the keyboard to a window there, and typing
+    // would no longer reach the field. The focus grab does not end on its own
+    // then, so the launcher closes with the switch.
+    Connections {
+        target: Compositor
+
+        // The key opens it on the screen the user is on.
+        function onLauncherPressed(): void {
+            if (root.focused)
+                root.toggleLauncher();
+        }
+
+        function onFocusedWorkspaceChanged(): void {
+            if (root.typing)
+                root.close();
+        }
     }
 
     // Held while a network password is asked for: typing it needs no pointer
@@ -163,10 +203,10 @@ Item {
         opacity: root.progress
         visible: root.blocking
 
-        // A MouseArea, not a TapHandler. The dashboard's controls use
+        // A MouseArea, not a TapHandler. The panels' controls use
         // TapHandlers, which take only a passive grab on press, and a press
         // that nothing accepts still reaches every TapHandler underneath: a
-        // tap on a tile would also tap the backdrop and close the dashboard.
+        // tap on a tile would also tap the backdrop and close the panel.
         // A MouseArea only sees presses no item above it has accepted, and the
         // island's catcher accepts all of those.
         MouseArea {
@@ -198,10 +238,10 @@ Item {
             }
         }
 
-        // Only consulted while the dashboard is open, when the shape is still.
-        // It sits on the shape itself rather than an item behind it: hover is
+        // Only consulted while a panel is open, when the shape is still. It
+        // sits on the shape itself rather than an item behind it: hover is
         // delivered to what is under the pointer and its ancestors, and an item
-        // behind the dashboard may never hear about it.
+        // behind the panel may never hear about it.
         HoverHandler {
             id: overIsland
         }
@@ -248,19 +288,19 @@ Item {
             }
         }
 
-        // Clips the dashboard while the shape is still smaller than it.
+        // Clips the panel while the shape is still smaller than it.
         Item {
             anchors.fill: parent
             clip: true
 
             // Swallows clicks on the island's empty space; without it they fall
-            // through to the backdrop and close the dashboard.
+            // through to the backdrop and close the panel.
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.AllButtons
             }
 
-            // Hands over to the dashboard below rather than overlapping it.
+            // Hands over to the panel below rather than overlapping it.
             Pressable {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
@@ -316,7 +356,7 @@ Item {
                 }
 
                 // Hands over with the clock the way the clock does with the
-                // dashboard.
+                // panel.
                 VolumeLevel {
                     id: volumeLevel
 
@@ -331,17 +371,31 @@ Item {
             // Exists only while open or animating, so its polling stops when
             // the island is a pill again.
             Loader {
-                id: dashboard
+                id: form
 
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 active: root.blocking
                 opacity: root.fadeIn(root.progress)
-
-                sourceComponent: Dashboard {
-                    date: root.date
-                }
+                sourceComponent: root.panel === "launcher" ? launcher : dashboard
             }
+        }
+    }
+
+    Component {
+        id: dashboard
+
+        Dashboard {
+            date: root.date
+        }
+    }
+
+    Component {
+        id: launcher
+
+        Launcher {
+            onLaunched: root.close()
+            onCancelled: root.close()
         }
     }
 

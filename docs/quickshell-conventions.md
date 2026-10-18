@@ -123,6 +123,10 @@ A service must:
 - absorb the vendor mess. Optional chaining against half-connected daemons, JSON parsing,
   subprocess polling, tracker objects — all of it lives here, so panels stay declarative.
 
+State the shell keeps for itself across restarts — how often each app has been launched —
+is the service's too, in a file under `Quickshell.statePath()`. That is not user config,
+which §9 defers: nobody edits it, and losing it only loses a convenience.
+
 **[engine]** A backend singleton connects on first use *by a binding* and fills in over the
 seconds after that. Read one from plain JavaScript before anything has bound to it and it
 reads empty forever, so a service exposes bindings, never snapshots.
@@ -173,8 +177,8 @@ system in advance of that.
 Singletons of pure functions: `Icons` picks a glyph for a state, `Format` turns a number or
 a date into text. Each function answers from its arguments alone — no IO, no state, no
 reading a service — so the caller passes in what it shows:
-`Icons.wifi(Network.connected, Network.strength)`. A util may import `qs.config` and
-nothing else of ours. The system locale counts as one of its arguments, the way it does for
+`Icons.wifi(Network.connected, Network.strength)`. A util may import `qs.config`, and
+other utils through `qs.utils`, and nothing else of ours. The system locale counts as one of its arguments, the way it does for
 `Qt.formatDateTime`: weekday names and the first day of the week come from it. Arithmetic
 a feature cannot do in a binding, such as the weeks that hold a month, belongs here too,
 even with one caller, because it is where a test can reach it.
@@ -367,11 +371,14 @@ owns its inner padding; the window owns where it sits.
 `Escape` — use `OnDemand`: the keyboard comes over on the first click inside it. A text
 field inside such a modal surface stays `OnDemand` too: the click that opens the field is a
 click inside the surface, so the keyboard is already there, and while the backdrop is up no
-click can land anywhere else to take it away. Use `Exclusive` only for a text field on a
-surface that does not hold the screen, and only for as long as it is open, driven by a
-property the panel exposes. A text field takes `Escape` for itself before any shortcut
-sees it (`Keys.onShortcutOverride`), so `Escape` backs out of the field before it closes
-the surface. A surface left focusable steals the keyboard from the focused window on every
+click can land anywhere else to take it away. A surface a key opens to be typed into — the
+launcher — is `OnDemand` as well, with a `HyprlandFocusGrab` on its window for as long as it
+is open: no click brought the keyboard over, and the grab does, without the hold `Exclusive`
+takes. It closes on a workspace switch, which moves the keyboard but does not end the grab.
+Use `Exclusive` only for a text field on a surface that does not hold the screen, and only
+for as long as it is open, driven by a property the panel exposes. A text field takes
+`Escape` for itself before any shortcut sees it (`Keys.onShortcutOverride`), so `Escape`
+backs out of the field before it closes the surface. A surface left focusable steals the keyboard from the focused window on every
 click; one left exclusive holds the keyboard hostage, so every such form needs an escape
 that cannot be missed — `Escape`, a visible cancel, and a timeout on whatever it is waiting
 for. *(Rewritten: the first version allowed only None and Exclusive.)*
@@ -379,7 +386,8 @@ for. *(Rewritten: the first version allowed only None and Exclusive.)*
 Never hold `Exclusive` across something the user might do elsewhere. While it is held no
 window can take focus, so a workspace switch leaves Hyprland remembering a window on the
 old workspace, and the moment the surface lets go, Hyprland focuses that window and takes
-the user back to it.
+the user back to it. Closing the surface on the switch does not help: the letting go is
+what sends the user back.
 
 The dashboard's right-hand column shows one pane at a time — media and notifications, a
 list, the calendar — through one `Loader`, so only the pane on show exists. Panes are not
@@ -419,11 +427,16 @@ change and shows an OSD. Neither needs to know about the other, and the OSD then
 every source of change — media keys, a terminal, a headset button.
 
 Whatever the shell reads from Hyprland — which screen is focused — goes through
-`services/Compositor`, so nothing else imports `Quickshell.Hyprland`.
+`services/Compositor`, so nothing else imports `Quickshell.Hyprland`. The one exception is
+`HyprlandFocusGrab` in `shell.qml`, which has to be handed the window itself.
 
-The shell may grow an `IpcHandler` when the compositor genuinely needs to command it
-(toggling a panel from a keybind). Prefer observation first; a shell that only listens
-cannot get out of sync.
+Prefer observation; a shell that only listens cannot get out of sync. Where a key must
+command the shell — opening the launcher — the key stays Hyprland's and the shell only
+names the action: `services/Compositor` registers a `GlobalShortcut` (`launcher`), and
+`hyprland.lua` binds a key to `hl.dsp.global("quickshell:launcher")`. Registered once, in
+the service, however many screens there are; every island hears the signal and the one on
+the focused screen acts. Not an `IpcHandler` called through `qs ipc call` from the bind: that starts a
+process on every press, and a held key repeats it.
 
 Compositor-side animation must be disabled for our surfaces
 (`hl.layer_rule { match = { namespace = "^quickshell:dilico$" }, no_anim = true }`). Two
@@ -444,9 +457,9 @@ before.
 
 | Deferred | Build it when |
 |---|---|
-| Splitting a panel host into a `Wrapper`/`Content` pair (§6) | A third panel exists. At one, the indirection costs more than it saves |
+| Splitting a panel host into a `Wrapper`/`Content` pair (§6) | A third panel exists. At two (the dashboard and the launcher, switched by name in `Island`), the indirection costs more than it saves |
 | User config as JSON via `FileView` + `JsonAdapter`, with a version number and migrations | Someone other than the author configures this. Constants in `config/` singletons are correct until then |
-| `IpcHandler` for compositor-driven commands | A keybind must command the shell. Observation is preferred while it suffices (§8) |
+| `IpcHandler` | Something other than a key must command the shell, such as a script. Keys are global shortcuts (§8) |
 | A committed lint and format check in CI | More than one person commits |
 
 ## 10. Why these rules
@@ -484,7 +497,7 @@ renegotiating the layer surface size every frame; a panel stuck open because a s
 pointer position survived a missing `leave` event; a crash from a binding loop where a
 `PwObjectTracker` was fed by a list that the tracking itself modified.
 
-Later rewrites paid for six more, each now a rule in §6 or §8:
+Later rewrites paid for seven more, each now a rule in §6 or §8:
 
 - **The taller band** (the first version's rule) blocked the top 48 px of the screen whenever the
   notch showed. Replaced by the notch plus a margin, with the travel covered by the hold.
@@ -499,6 +512,11 @@ Later rewrites paid for six more, each now a rule in §6 or §8:
   hover for itself: no control showed a hand cursor or a highlight, and the dashboard's
   idle timeout ran while the pointer was on it. Found in an offscreen `qmltestrunner` case;
   moved to the full-window item that is everything's ancestor.
+- **`Exclusive` on the launcher**, since a key, unlike a click, does not bring the keyboard
+  over, sent the user back to the old workspace on `SUPER+3`, even though the launcher
+  closed on the switch: Hyprland's event log showed the switch and the return 10 ms apart.
+  `OnDemand` alone switched cleanly but took the keyboard only once in five openings.
+  `OnDemand` with a `HyprlandFocusGrab` took it every time and switched cleanly.
 - **`hovered` trusted after the mask shrank** kept the clock down after a click outside
   closed the dashboard: the pointer had been inside the full-screen mask, and no `leave`
   came when the mask let go of it. Replaced by checking the last pointer position against

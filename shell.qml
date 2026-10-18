@@ -1,7 +1,11 @@
+//@ pragma IconTheme Adwaita
+// App icons come from the desktop's theme (GNOME's, here). Quickshell reads
+// this when it starts, not on a reload.
 pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.modules.island
 import qs.services
@@ -12,12 +16,13 @@ import qs.services
 ShellRoot {
     // A singleton is only created on first reference, which would otherwise be
     // whenever something first reads it. The notification daemon has to be up
-    // from login; the backlight takes its one reading before the dashboard is
-    // first opened (see Brightness). Here rather than in a window, so it runs
-    // once however many screens there are.
+    // from login, and so does the launcher's key; the backlight takes its one
+    // reading before the dashboard is first opened (see Brightness). Here
+    // rather than in a window, so it runs once however many screens there are.
     Component.onCompleted: {
         Notifications.count;
         Brightness.available;
+        Compositor.focusedWorkspace;
     }
 
     Variants {
@@ -54,9 +59,9 @@ ShellRoot {
             readonly property bool inStrip: panel.pointer.y < panel.revealMargin
             readonly property bool inKeepArea: panel.pointer.x >= panel.keepArea.x && panel.pointer.x < panel.keepArea.x + panel.keepArea.width && panel.pointer.y < panel.keepArea.height
 
-            // Hovered is not enough on its own. While the dashboard is open the
-            // mask is the whole screen, so the pointer is inside wherever it
-            // is; when the dashboard closes the mask shrinks out from under it,
+            // Hovered is not enough on its own. While a panel is open the mask
+            // is the whole screen, so the pointer is inside wherever it is;
+            // when the panel closes the mask shrinks out from under it,
             // and Hyprland reports no leave until the pointer moves, so hovered
             // would stay true and hold the clock down. Where the pointer was
             // last seen still says whether it is in what the mask has kept.
@@ -71,7 +76,7 @@ ShellRoot {
 
             screen: panel.modelData
 
-            // The whole screen, so the dashboard's backdrop can catch a click
+            // The whole screen, so an open panel's backdrop can catch a click
             // anywhere. The size never changes; the mask decides what takes
             // input.
             anchors {
@@ -84,12 +89,13 @@ ShellRoot {
             WlrLayershell.namespace: "quickshell:dilico"
             WlrLayershell.layer: WlrLayer.Overlay
 
-            // On demand, and only while the dashboard is open: the keyboard
-            // comes here once something in the dashboard is clicked, which is
-            // what makes Escape work. Never Exclusive. An exclusive surface
-            // keeps every window from taking focus, so after a workspace switch
-            // Hyprland still remembers a window on the old one, and hands focus
-            // back to it, workspace and all, the moment the dashboard lets go.
+            // On demand, and only while the island is open: the dashboard gets
+            // the keyboard on a click, which is what makes Escape work, and the
+            // launcher from the focus grab below. Never Exclusive. An exclusive
+            // surface keeps every window from taking focus, so after a
+            // workspace switch Hyprland still remembers a window on the old
+            // one, and hands focus back to it, workspace and all, the moment
+            // the island lets go.
             WlrLayershell.keyboardFocus: island.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             color: "transparent"
@@ -97,8 +103,8 @@ ShellRoot {
 
             // The strip along the top always takes input, since it is what the
             // pointer enters to call the clock down. The notch and its margin
-            // join it only while showing, and the whole screen only while the
-            // dashboard is open. Everything else clicks through to the windows
+            // join it only while showing, and the whole screen only while a
+            // panel is open. Everything else clicks through to the windows
             // below.
             //
             // The margin wraps the resting pill's hit area, which hover never
@@ -130,6 +136,15 @@ ShellRoot {
                 id: clock
 
                 precision: SystemClock.Minutes
+            }
+
+            // The launcher is opened by a key, not a click, so nothing would
+            // bring the keyboard over; the grab does, and Hyprland ends it if
+            // something else takes the keyboard.
+            HyprlandFocusGrab {
+                windows: [panel]
+                active: island.typing
+                onCleared: island.close()
             }
 
             // Long enough to carry the pointer from wherever it touched the

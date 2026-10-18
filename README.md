@@ -22,6 +22,11 @@ from the edge and flares into it (`true`).
   of cpu, memory, temperature and battery (click cpu or mem for the heaviest processes,
   sorted by it; the column headings switch the sort; click one to end it, or kill it if it
   will not go).
+- **Launcher** — a key (see below) grows the island on the screen you are on into a search
+  field over your apps. Type to filter by name, generic name, keywords or initials ("vsc");
+  up and down pick, Enter launches, Escape or a click outside closes. With nothing typed
+  the apps are in alphabetical order; once you type, among equal matches the apps you launch
+  most come first.
 - **Volume pill** — when the volume changes (the volume and mute keys, or anything else
   that turns the output up, down or off), the island drops down with the level for a
   moment, on the screen you are on. Not while the dashboard is open, whose slider shows it.
@@ -38,6 +43,7 @@ Log out, reboot and power off ask for a second click within 3 s. Lock does not.
 - Hyprland, PipeWire, NetworkManager, BlueZ, UPower with power-profiles-daemon
 - `brightnessctl`, `loginctl`, `systemctl`
 - JetBrainsMono Nerd Font
+- An icon theme for app icons; `shell.qml` names it (`Adwaita`) in its `IconTheme` pragma
 
 ## Run
 
@@ -59,6 +65,12 @@ are no popups yet — notifications collect in the dashboard and the pill shows 
 Click one to dismiss it.
 
 ## Hyprland settings
+
+The launcher opens from a key Hyprland hands the shell:
+
+```lua
+hl.bind(mainMod .. " + SPACE", hl.dsp.global("quickshell:launcher"))
+```
 
 The shell animates itself; the compositor animating the same surface makes it jitter:
 
@@ -97,13 +109,13 @@ components/                        Label, Subtext, Caption, Pressable, Surface,
                                    Track, SignalBars, Segmented, TextField, Watch
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
-services/                          Audio, Battery, Bluez, Brightness, Compositor, Idle,
-                                   Media, Network, Notifications, PowerMode, Processes,
-                                   Radios, Session, SystemStats
-utils/                             Icons, Format, Order, Calendar
+services/                          Apps, Audio, Battery, Bluez, Brightness, Compositor,
+                                   Idle, Media, Network, Notifications, PowerMode,
+                                   Processes, Radios, Session, SystemStats
+utils/                             Icons, Format, Order, Calendar, Search
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop
-modules/island/panels/             Dashboard
+modules/island/panels/             Dashboard, Launcher
 modules/island/components/         the island's own widgets
 docs/quickshell-conventions.md     where new code goes, and why
 ```
