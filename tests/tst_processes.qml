@@ -119,7 +119,7 @@ Item {
             verify(row(0).offered, "the offer stays on the one picked");
             Processes.processes = Processes.processes.filter(p => p.pid !== 30);
             verify(!names().includes("proc30"));
-            tryCompare(card, "picked", 0, 1000, "nothing left to offer");
+            verify(!card.holding, "nothing left to offer");
         }
 
         function test_sortingTakesTheOfferBack() {

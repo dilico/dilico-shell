@@ -17,14 +17,17 @@ PaneCard {
     // sortPicked, and the owner decides.
     property string sortBy: "cpu"
 
-    // The process clicked, offered to end, by pid, or 0. While there is one
-    // the order holds still, so the row under the pointer stays the one
-    // offered; the figures stay live, and a process that exits drops out.
+    // The process clicked, offered to end, by pid, or 0. While it is still
+    // running the order holds still, so the row under the pointer stays the
+    // one offered; the figures stay live, and a process that exits drops out.
+    // Once it has exited nothing is offered, worked out rather than written,
+    // so no change of the rows has to write back to what they depend on.
     property int picked: 0
     property var heldOrder: []
 
+    readonly property bool holding: root.picked !== 0 && Processes.processes.some(p => p.pid === root.picked)
     readonly property var live: Processes.ready ? Processes.top(root.sortBy, root.shown) : []
-    readonly property var rows: root.picked !== 0 ? root.heldOrder.map(pid => Processes.processes.find(p => p.pid === pid)).filter(p => p !== undefined) : root.live
+    readonly property var rows: root.holding ? root.heldOrder.map(pid => Processes.processes.find(p => p.pid === pid)).filter(p => p !== undefined) : root.live
     readonly property int rowHeight: 26
     readonly property int valueWidth: 52
     // Whatever the column headings leave.
@@ -34,7 +37,7 @@ PaneCard {
 
     // Clicking the one offered takes the offer back.
     function pick(pid: int): void {
-        if (root.picked === 0)
+        if (!root.holding)
             root.heldOrder = root.live.map(p => p.pid);
         root.picked = root.picked === pid ? 0 : pid;
     }
@@ -48,11 +51,6 @@ PaneCard {
 
     // A list held in one order would be wrong in the other.
     onSortByChanged: root.picked = 0
-    // Nothing is left to offer once the process has gone. Taken back on the
-    // next turn: rows depends on picked, so changing it while rows is still
-    // reporting its change would loop.
-    onRowsChanged: if (root.picked !== 0 && !root.rows.some(p => p.pid === root.picked))
-        Qt.callLater(() => root.picked = 0)
 
     Watch {
         service: Processes
@@ -114,7 +112,7 @@ PaneCard {
 
                 // Null for a moment while the rows shrink.
                 readonly property var modelData: root.rows[row.index] ?? null
-                readonly property bool offered: row.modelData !== null && root.picked === row.modelData.pid
+                readonly property bool offered: root.holding && row.modelData !== null && root.picked === row.modelData.pid
 
                 width: list.width
                 height: root.rowHeight
