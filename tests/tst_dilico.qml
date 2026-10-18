@@ -229,6 +229,12 @@ Item {
             compare(Format.ago(1000, 1000 + 5 * 60), "5m ago");
             compare(Format.ago(1000, 1000 + 3 * 3600), "3h ago");
             compare(Format.ago(1000, 1000 + 2 * 86400), "2d ago");
+            compare(Format.monitor(true, "0x0B9C", "eDP-1"), "built-in");
+            compare(Format.monitor(false, "DELL U2720Q", "DP-3"), "DELL U2720Q");
+            compare(Format.monitor(false, "", "HDMI-A-1"), "HDMI-A-1");
+            compare(Format.resolution(1920, 1200), "1920 × 1200");
+            compare(Format.refresh(60.003), "60 hz");
+            compare(Format.refresh(59.94), "59.94 hz");
         }
 
         function test_icons() {

@@ -21,7 +21,7 @@ from the edge and flares into it (`true`).
   or inputs with something plugged in, to switch to another); power profile; now playing; notifications; a line
   of cpu, memory, temperature and battery (click cpu or mem for the heaviest processes,
   sorted by it; the column headings switch the sort; click one to end it, or kill it if it
-  will not go).
+  will not go; click displays for the monitors, below).
 - **Launcher** — a key (see below) grows the island on the screen you are on into a search
   field over your apps. Type to filter by name, generic name, keywords or initials ("vsc");
   up and down pick, Enter launches, Escape or a click outside closes. With nothing typed
@@ -36,6 +36,20 @@ dashboard only takes the keyboard on a click, so a workspace switch while it's o
 moves focus normally). It also closes itself after 30 s without the pointer on it.
 
 Log out, reboot and power off ask for a second click within 3 s. Lock does not.
+
+### Displays
+
+`displays`, at the right of the dashboard's bottom line, opens the monitors plugged in: a
+map of where they sit, and the modes of the one picked on it. Drag a monitor on the map
+and drop it beside another: it snaps to touch that one's side, lining up with its edges
+or middle when dropped near them. Click a mode to switch to it. A new mode goes back to
+the old one after 15 s unless you click keep, so a mode the screen cannot show undoes
+itself.
+
+Changes take effect at once and are saved to `~/.config/hypr/monitors.lua`, one line per
+monitor, named by its description so the setting follows it to another port. A monitor
+not plugged in keeps its line. The pane rewrites that file whole, so anything else about a
+monitor (vrr, bit depth) belongs in `hyprland.lua`.
 
 ### Lock screen
 
@@ -114,6 +128,16 @@ hl.layer_rule({
 })
 ```
 
+Monitors come from the file the displays pane writes. In `hyprland.lua`, in place of
+`hl.monitor` calls:
+
+```lua
+local monitors = (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/hypr/monitors.lua"
+if not pcall(dofile, monitors) then
+    hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "1" })
+end
+```
+
 ## Development
 
 Read [`docs/quickshell-conventions.md`](docs/quickshell-conventions.md) before adding
@@ -151,10 +175,11 @@ components/                        Label, Subtext, Caption, Pressable, Surface,
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
 services/                          Apps, Audio, Auth, Battery, Bluez, Brightness,
-                                   Compositor, Idle, Keyboard, Media, Network,
+                                   Compositor, Displays, Idle, Keyboard, Media, Network,
                                    Notifications, PowerMode, Processes, Radios, Session,
                                    SystemStats
-utils/                             Icons, Format, Order, Calendar, Search
+utils/                             Icons, Format, Order, Calendar, Search, Arrange,
+                                   MonitorRules
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop
 modules/island/panels/             Dashboard, Launcher

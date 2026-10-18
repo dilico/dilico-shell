@@ -14,8 +14,8 @@ Item {
     required property date date
 
     // What the right-hand column shows: media and notifications, one of the
-    // lists, the calendar or the processes. Back to home whenever the
-    // dashboard opens, since it is rebuilt each time.
+    // lists, the calendar, the processes or the displays. Back to home
+    // whenever the dashboard opens, since it is rebuilt each time.
     property Component pane: homePane
     // What the processes pane is sorted by: "cpu" or "memory".
     property string processSort: "cpu"
@@ -34,6 +34,12 @@ Item {
         if (n === 0)
             return "on";
         return n === 1 ? Bluez.deviceName(Bluez.connected[0]) : `${n} connected`;
+    }
+
+    // A pane opened by what opened it, the same way as a toggle: the clock
+    // and date, or "displays", again closes it.
+    function togglePane(pane: Component): void {
+        root.pane = root.pane === pane ? homePane : pane;
     }
 
     // A figure in the stats line opens the processes sorted by it, and the
@@ -85,7 +91,7 @@ Item {
 
                 Accessible.name: "calendar"
 
-                onClicked: root.pane = root.pane === calendarPane ? homePane : calendarPane
+                onClicked: root.togglePane(calendarPane)
 
                 RowLayout {
                     id: clockRow
@@ -254,6 +260,7 @@ Item {
         StatsLine {
             Layout.fillWidth: true
             onProcessesClicked: by => root.showProcesses(by)
+            onDisplaysClicked: root.togglePane(displaysPane)
         }
     }
 
@@ -328,5 +335,11 @@ Item {
         id: bluetoothPane
 
         BluetoothCard {}
+    }
+
+    Component {
+        id: displaysPane
+
+        DisplaysCard {}
     }
 }

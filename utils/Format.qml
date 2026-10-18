@@ -72,4 +72,23 @@ Singleton {
         const m = Math.round(seconds / 60);
         return m >= 60 ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}m` : `${m}m`;
     }
+
+    // A monitor by what a person calls it: "built-in" for a laptop's own
+    // panel, whose model is only its maker's part number, else its model,
+    // else its port.
+    function monitor(builtIn: bool, model: string, port: string): string {
+        if (builtIn)
+            return "built-in";
+        return model || port;
+    }
+
+    // A mode's size: "1920 × 1200".
+    function resolution(width: int, height: int): string {
+        return `${width} × ${height}`;
+    }
+
+    // A refresh rate, whole unless it is not: "60 hz", "59.94 hz".
+    function refresh(hz: real): string {
+        return Math.abs(hz - Math.round(hz)) < 0.01 ? `${Math.round(hz)} hz` : `${hz.toFixed(2)} hz`;
+    }
 }

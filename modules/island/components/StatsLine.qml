@@ -9,7 +9,7 @@ import qs.utils
 // qmllint enable unused-imports
 
 // The line along the dashboard's foot. The cpu and memory figures open the
-// heaviest processes, sorted by that figure.
+// heaviest processes, sorted by that figure, and "displays" the monitors.
 Item {
     id: root
 
@@ -24,6 +24,7 @@ Item {
 
     // "cpu" or "memory".
     signal processesClicked(string by)
+    signal displaysClicked()
 
     implicitWidth: 600
     implicitHeight: 30
@@ -69,12 +70,23 @@ Item {
         }
     }
 
-    Caption {
+    Row {
         anchors.right: parent.right
         anchors.rightMargin: 4
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 1
-        text: "arch · hyprland"
+        spacing: 18
+
+        Figure {
+            objectName: "displays"
+            text: "displays"
+            Accessible.name: "displays"
+            onClicked: root.displaysClicked()
+        }
+
+        Caption {
+            text: "arch · hyprland"
+        }
     }
 
     // A figure to click, built as TextButton is at the caption's size: it

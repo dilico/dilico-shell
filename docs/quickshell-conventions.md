@@ -414,7 +414,7 @@ the user back to it. Closing the surface on the switch does not help: the lettin
 what sends the user back.
 
 The dashboard's right-hand column shows one pane at a time — media and notifications, a
-list, the calendar — through one `Loader`, so only the pane on show exists. Panes are not
+list, the calendar, the processes, the displays — through one `Loader`, so only the pane on show exists. Panes are not
 panels: each is a `PaneCard`, which owns the card, the header with its way back, and where
 the pane's contents sit, and the dashboard answers every pane's `back` in one place.
 
@@ -447,13 +447,25 @@ live on this machine; `hyprctl keyword` does not work — use `hyprctl eval` wit
 `hyprctl dispatch` with an `hl.dsp.*` call).
 
 Keep the division clean: **the compositor owns key bindings and window rules; the shell
-observes and displays.** Volume keys run `wpctl`; the shell notices the resulting PipeWire
+observes and displays** (monitors, below, are the one exception). Volume keys run `wpctl`; the shell notices the resulting PipeWire
 change and shows an OSD. Neither needs to know about the other, and the OSD then works for
 every source of change — media keys, a terminal, a headset button.
 
-Whatever the shell reads from Hyprland — which screen is focused — goes through
-`services/Compositor`, so nothing else imports `Quickshell.Hyprland`. The one exception is
+Nothing but `services/Compositor` imports `Quickshell.Hyprland`: whatever the shell reads
+from it — which screen is focused — goes through there. The one exception is
 `HyprlandFocusGrab` in `shell.qml`, which has to be handed the window itself.
+
+**Monitors are the one thing the shell sets in Hyprland's config.** The displays pane
+arranges them, so `services/Displays` sets them live with `hyprctl eval` of `hl.monitor`
+calls and keeps them in `~/.config/hypr/monitors.lua`, which `hyprland.lua` runs with
+`dofile` inside a `pcall`, so a missing file costs the monitor rules and not the rest of the
+config. Its writes can only go through `hyprctl`, so it reads through `hyprctl monitors -j`
+too, rather than through `Compositor`. The file is one line per monitor in a fixed form
+(`utils/MonitorRules`); a save reads it back and merges, so a monitor that is unplugged
+keeps its line, then writes it whole, dropping any line in another form, which is why hand
+edits belong in `hyprland.lua`. A line names its monitor by `desc:` (by port when it has no
+description), since the port an external one is plugged into changes. A new mode is undone
+after 15 seconds unless kept: a mode the screen cannot show leaves nothing on it to click.
 
 Prefer observation; a shell that only listens cannot get out of sync. Where a key must
 command the shell — opening the launcher — the key stays Hyprland's and the shell only
