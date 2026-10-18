@@ -16,6 +16,7 @@ Singleton {
     property bool busy: false
     property string failure: ""
     property bool enabled: true
+    property bool connected: true
     property var networks: []
     property string internet: "online"
     property string interfaceName: "wlan0"

@@ -37,6 +37,34 @@ moves focus normally). It also closes itself after 30 s without the pointer on i
 
 Log out, reboot and power off ask for a second click within 3 s. Lock does not.
 
+### Lock screen
+
+A dark frosted screen, opaque: a big clock and the date in the top corner, the password
+as a terminal prompt in the bottom one (`el_scrondo ❯ password:`, coloured like the zsh
+prompt), and battery, wifi and caps lock across from it. Type the password and press
+Enter; Escape empties the prompt. It checks the password the way logging in does
+(PAM's `login`), so three wrong tries lock the account for ten minutes, as at the login
+prompt.
+
+It runs as its own instance, apart from the shell, which hypridle starts. In
+`~/.config/hypr/hypridle.conf`:
+
+```
+lock_cmd = qs -p ~/.config/quickshell/dilico/lock.qml -n -d
+```
+
+The idle timer, the dashboard's lock button and suspend all lock through that line.
+
+If the lock screen ever crashes, the session stays locked with nothing to type into.
+With `misc:allow_session_lock_restore` on in Hyprland, switch to a text console
+(Ctrl+Alt+F3), log in, and start it again:
+
+```sh
+hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("qs -p ~/.config/quickshell/dilico/lock.qml -n -d")'
+```
+
+then switch back (Ctrl+Alt+F1, or whichever console Hyprland is on) and unlock.
+
 ## Requirements
 
 - quickshell 0.3.1+, Qt 6
@@ -96,6 +124,14 @@ qs log -c dilico --log-times
 `qmllint` must be silent and `tests/run.sh` must pass before anything is called done; both are
 in §3 of the conventions.
 
+To work on the lock screen without locking, show it in an ordinary window, and close it
+from a terminal:
+
+```sh
+DILICO_LOCK_PREVIEW=1 qs -p lock.qml -d
+qs kill -p lock.qml
+```
+
 `.qmlls.ini` is host-specific (it names this machine's uid and shell id); Quickshell
 fills it in when it exists and is empty.
 
@@ -104,18 +140,21 @@ fills it in when it exists and is empty.
 ```
 shell.qml                          a layer-shell window per screen, its mask, the reveal
                                    and hold
+lock.qml                           the lock screen, run as its own instance
 components/                        Label, Subtext, Caption, Pressable, Surface,
                                    IconButton, TextButton, ChevronButton, Tile, Switch, Slider,
                                    Track, SignalBars, Segmented, TextField, Watch
 config/                            Appearance, Colors, Typography, Rounding, Spacing,
                                    Animations, Glyphs
-services/                          Apps, Audio, Battery, Bluez, Brightness, Compositor,
-                                   Idle, Media, Network, Notifications, PowerMode,
-                                   Processes, Radios, Session, SystemStats
+services/                          Apps, Audio, Auth, Battery, Bluez, Brightness,
+                                   Compositor, Idle, Keyboard, Media, Network,
+                                   Notifications, PowerMode, Processes, Radios, Session,
+                                   SystemStats
 utils/                             Icons, Format, Order, Calendar, Search
 tests/                             offscreen tests and their runner
 modules/island/Island.qml          the pill, the morph, the fillets, the backdrop
 modules/island/panels/             Dashboard, Launcher
 modules/island/components/         the island's own widgets
+modules/lock/                      the lock screen, its frost and its prompt
 docs/quickshell-conventions.md     where new code goes, and why
 ```

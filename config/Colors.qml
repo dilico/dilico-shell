@@ -28,4 +28,10 @@ Singleton {
     readonly property color activeSubtext: "#4a4a4a"
 
     readonly property color backdrop: Qt.rgba(0, 0, 0, 0.45)
+
+    // The lock screen: dark frost, opaque, so nothing behind it shows. The
+    // glow is the lighter corner the frost fades out from. Its text is the
+    // shell's own, the way the terminal's prompt is coloured.
+    readonly property color lockGround: "#1e2023"
+    readonly property color lockGlow: "#2d3034"
 }

@@ -38,6 +38,7 @@ If two answers feel right, you are holding two things. Split it.
 
 ```
 shell.qml                   windows, pragmas, wiring — nothing else
+lock.qml                    the lock screen's own entry point, the same contract
 components/                 feature-agnostic primitives
 modules/<feature>/          one directory per surface
 modules/<feature>/panels/   panels that surface hosts
@@ -56,6 +57,16 @@ reasoned about on its own belongs here.
 
 It grows by roughly one block per surface. If it is growing for any other reason, the
 thing that is growing belongs in a module.
+
+### `lock.qml`
+
+The lock screen is a second entry point, run as its own Quickshell instance
+(`qs -p …/lock.qml`), which hypridle's `lock_cmd` starts and unlocking ends. It holds the
+same as `shell.qml` — the session lock, its surfaces, wiring — and draws from the same
+`components/`, `config/`, `utils/` and `services/`. Apart, because the shell reloads on
+every save and has crashed: neither may ever open a lock. It does not watch its files
+(`settings.watchFiles: false`), and it references only the services it shows; one it never
+references is never created there, so the notification daemon stays in the shell.
 
 ### `components/`
 
@@ -83,8 +94,12 @@ does.
 **Text takes a role, not a size.** `Label` is body text, `Subtext` the dimmer second line
 under it, `Caption` the smallest metadata. Override colour or weight where the text is
 something else. A new size in `Typography` arrives together with the role component that
-uses it; a glyph (`iconSize`) and the big clock (`clockSize`) are the only sizes set
+uses it; a glyph (`iconSize`), the big clock (`clockSize`) and the lock screen's clock,
+date and password (`lock*Size`, one composition drawn at one size) are the only sizes set
 directly, besides a text input's `bodySize`, since a `TextInput` cannot be a `Label`.
+
+An image a feature draws lives beside the file that draws it and is named relative to it
+(`source: "grain.png"`), the way a component is found beside its user.
 
 ### `modules/<feature>/`
 
@@ -241,11 +256,18 @@ function setVolume(v: real): void { ... }
 ```
 qmllint -I "$(sed -n 's/^buildDir="\(.*\)"/\1/p' .qmlls.ini)" \
     shell.qml components/*.qml config/*.qml services/*.qml utils/*.qml \
-    modules/*/*.qml modules/*/panels/*.qml modules/*/components/*.qml
+    modules/island/*.qml modules/island/panels/*.qml modules/island/components/*.qml
 ```
 
 The include path is only populated while `.qmlls.ini` exists; Quickshell fills an empty
-one in on the next launch.
+one in on the next launch. It is the shell's, and holds only what the shell imports, so the
+lock (and the services only it uses) is linted against its own, which its preview writes
+(`DILICO_LOCK_PREVIEW=1 qs -p lock.qml -d`, then `qs kill -p lock.qml`):
+
+```
+qmllint -I "/run/user/$(id -u)/quickshell/vfs/$(qs log -p lock.qml | sed -n 's/.*Shell ID: "\([0-9a-f]*\)".*/\1/p' | head -1)" \
+    lock.qml modules/lock/*.qml modules/lock/components/*.qml services/*.qml
+```
 
 A `// qmllint disable <rule>` is allowed only for a verified false positive, on the
 narrowest possible scope, with the reason in a comment.
@@ -318,7 +340,9 @@ closed, which pane — lives in that window, and never in a singleton. What it s
 the services, shared by every screen, and a service's one-at-a-time state (the one network
 being joined) is one for all of them. Panels are ordinary `Item`s inside it, never
 windows of their own. A second window is justified only when the content must outlive or
-escape the bar — a lock screen, a standalone settings window.
+escape the bar — a standalone settings window. The lock screen is past that: it is a
+second instance (`lock.qml`, above), and a session lock's surfaces are its windows, one
+per screen.
 
 **Something that answers no pointer shows on one screen only**, the one the user is on — the
 volume shown after it changes. Each window asks `Compositor` whether that is its screen.

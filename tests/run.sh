@@ -27,9 +27,14 @@ module() {
             echo "$name 1.0 $name.qml"
         fi >> "$work/qs/$dir/qmldir"
     done
+    # Images a file in the directory draws by a name relative to it.
+    for file in "$source"/*.png; do
+        [ -e "$file" ] && ln -s "$file" "$work/qs/$dir/"
+    done
+    return 0
 }
 
-for dir in components config utils modules/island/components modules/island/panels; do
+for dir in components config utils modules/island/components modules/island/panels modules/lock modules/lock/components; do
     module "$dir" "$root/$dir"
 done
 module services "$root/tests/fakes/services"
