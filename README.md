@@ -51,9 +51,13 @@ It runs as its own instance, apart from the shell, which hypridle starts. In
 
 ```
 lock_cmd = qs -p ~/.config/quickshell/dilico/lock.qml -n -d
+inhibit_sleep = 3
 ```
 
 The idle timer, the dashboard's lock button and suspend all lock through that line.
+`inhibit_sleep = 3` keeps the machine awake until the lock screen is up. Without it,
+suspend wins the race against Quickshell starting, and waking shows the desktop for a
+moment before the lock appears.
 
 If the lock screen ever crashes, the session stays locked with nothing to type into.
 With `misc:allow_session_lock_restore` on in Hyprland, switch to a text console
