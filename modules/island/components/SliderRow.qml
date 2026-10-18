@@ -44,6 +44,7 @@ Item {
     }
 
     Slider {
+        objectName: "slider"
         anchors.left: button.right
         anchors.leftMargin: 12
         anchors.right: valueText.left
@@ -58,7 +59,9 @@ Item {
     Caption {
         id: valueText
 
-        anchors.right: detail.visible ? detail.left : parent.right
+        // The chevron's place is kept when it is hidden, so rows with and
+        // without one have sliders of one length.
+        anchors.right: detail.left
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         horizontalAlignment: Text.AlignRight

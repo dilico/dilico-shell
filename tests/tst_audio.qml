@@ -106,9 +106,27 @@ Item {
         }
     }
 
+    Component {
+        id: plainSliderComponent
+
+        SliderRow {
+            y: 450
+            width: 360
+            label: "brightness"
+            toggleable: false
+        }
+    }
+
     TestCase {
         name: "SliderRow"
         when: windowShown
+
+        function test_slidersMatchWithOrWithoutAChevron() {
+            const withChevron = createTemporaryObject(sliderComponent, parent);
+            const without = createTemporaryObject(plainSliderComponent, parent);
+            waitForRendering(without);
+            compare(findChild(without, "slider").width, findChild(withChevron, "slider").width, "brightness as long as volume");
+        }
 
         function test_chevronIsSeparateFromMute() {
             const slider = createTemporaryObject(sliderComponent, parent);
