@@ -12,6 +12,8 @@ Item {
     id: root
 
     required property date date
+    // The workspace this screen shows, for the stats line.
+    required property int workspace
 
     // What the right-hand column shows: media and notifications, one of the
     // lists, the calendar, the processes or the displays. Back to home
@@ -259,6 +261,7 @@ Item {
 
         StatsLine {
             Layout.fillWidth: true
+            workspace: root.workspace
             onProcessesClicked: by => root.showProcesses(by)
             onDisplaysClicked: root.togglePane(displaysPane)
         }

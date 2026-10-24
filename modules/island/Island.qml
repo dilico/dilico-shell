@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Shapes
+import Quickshell
 import qs.components
 import qs.config
 import qs.modules.island.components
@@ -10,18 +11,19 @@ import qs.services
 import qs.utils
 
 // The black shape at the top edge: a clock pill at rest, the dashboard once
-// clicked, the launcher from its key, and the volume for a moment after it
-// changes. Fills the window; the window's mask decides which parts of it take
-// input.
+// clicked, the launcher from its key, and the volume or the workspaces for a
+// moment after either changes. Fills the window; the window's mask decides
+// which parts of it take input.
 Item {
     id: root
 
     // Whether the clock is wanted on screen. The window decides, from hover.
     required property bool shown
-    // Whether this is the screen the user is on, the one a change of volume
-    // shows on and the launcher's key opens.
-    required property bool focused
+    required property ShellScreen screen
     required property date date
+    // Whether this is the screen the user is on, the one a change of volume
+    // or workspace shows on and the launcher's key opens.
+    readonly property bool focused: Compositor.focused(root.screen)
     property bool open: false
     // What the island grows into: "dashboard" from a click on the pill,
     // "launcher" from its key. Kept while it closes, so the panel shrinks
@@ -30,20 +32,27 @@ Item {
     property string panel: "dashboard"
     readonly property bool typing: root.open && root.panel === "launcher"
 
-    // For a moment after the volume changes, the pill comes down with it. Not
-    // over an open panel: the dashboard's slider already shows it, and the
-    // launcher has nothing to do with it.
+    // For a moment after the volume or the workspace changes, the pill comes
+    // down with it. Not over an open panel: the dashboard's slider already
+    // shows the volume, and a switch with a panel open is the panel's.
     readonly property bool announcing: announceTimer.running
 
-    // The volume rather than the clock in the pill. Set by a change; cleared
-    // when the pill is wanted for itself, so one that times out leaves with
-    // the volume still showing rather than changing on the way up.
-    property bool volumeShown: false
+    // What the pill shows instead of the clock: "volume", "workspaces", or ""
+    // for the clock. Set by a change, the latest one winning; cleared when the
+    // pill is wanted for itself, so one that times out leaves still showing
+    // what it came down for rather than changing on the way up.
+    property string announced: ""
 
-    // 0 the clock, 1 the volume, in the pill. Animated only while the pill is
-    // all the way down; out of sight it jumps, so the pill arrives already
-    // showing what it came down for.
-    property real volumeProgress: root.volumeShown ? 1 : 0
+    // Each 0 to 1 as the pill hands over from the clock to it. Animated only
+    // while the pill is all the way down; out of sight they jump, so the pill
+    // arrives already showing what it came down for. Between the two, one
+    // falls as the other rises, so the clock stays out.
+    property real volumeProgress: root.announced === "volume" ? 1 : 0
+    property real workspacesProgress: root.announced === "workspaces" ? 1 : 0
+    readonly property real announceProgress: root.volumeProgress + root.workspacesProgress
+
+    // The workspace this screen shows, for the dashboard.
+    readonly property int workspace: Compositor.workspaceOn(root.screen)
 
     // 0 is the pill, 1 the open panel. Animated by the state below; every size
     // and opacity derives from it.
@@ -53,7 +62,9 @@ Item {
     readonly property int pillPadding: 28
     readonly property real clockWidth: Math.round(pillRow.implicitWidth + root.pillPadding)
     readonly property real volumeWidth: volumeLevel.implicitWidth + root.pillPadding
-    readonly property real pillWidth: Math.round(root.clockWidth + (root.volumeWidth - root.clockWidth) * root.volumeProgress)
+    readonly property real workspacesWidth: workspaceStrip.implicitWidth + root.pillPadding
+    // Each width weighted by how far the pill has handed over to it.
+    readonly property real pillWidth: Math.round(root.clockWidth * (1 - root.announceProgress) + root.volumeWidth * root.volumeProgress + root.workspacesWidth * root.workspacesProgress)
 
     // The panel is loaded whenever progress is above 0, so these are only
     // ever 0 when progress is too and the size math never reads them.
@@ -74,7 +85,8 @@ Item {
     // Where the resting pill takes input, measured from the top edge, so it
     // covers a notch's fillets and the gap above a pill. Only the clock: while
     // a panel is open or animating, the window takes the whole screen,
-    // and the volume takes none, so it never resizes this under the pointer.
+    // and the volume and the workspaces take none, so they never resize this
+    // under the pointer.
     readonly property rect hitArea: Qt.rect(Math.round((root.width - root.clockWidth) / 2) - root.flare, 0, root.clockWidth + root.flare * 2, root.gap + root.pillHeight)
 
     // A notch's outline as an SVG path, in a frame that starts one fillet to the
@@ -131,29 +143,41 @@ Item {
         root.open = false;
     }
 
-    onAnnouncingChanged: root.volumeShown = root.announcing || !root.shown
+    // Brings the pill down showing `what`, "volume" or "workspaces", on the
+    // screen the user is on.
+    function announce(what: string): void {
+        if (!root.focused || root.blocking)
+            return;
+        root.announced = what;
+        announceTimer.restart();
+    }
+
+    onAnnouncingChanged: if (!root.announcing && root.shown)
+        root.announced = ""
     onShownChanged: if (root.shown && !root.announcing)
-        root.volumeShown = false
+        root.announced = ""
 
     Behavior on volumeProgress {
         enabled: slide.y === 0
 
-        NumberAnimation {
-            duration: Animations.durationMedium
-            easing.type: Animations.easingType
-        }
+        Eased {}
+    }
+
+    Behavior on workspacesProgress {
+        enabled: slide.y === 0
+
+        Eased {}
     }
 
     Connections {
         target: Audio
 
         function onAdjusted(): void {
-            if (root.focused && !root.blocking)
-                announceTimer.restart();
+            root.announce("volume");
         }
     }
 
-    // How long the volume stays after the last change; each change starts it
+    // How long the pill stays after the last change; each change starts it
     // again, so a held key keeps it down.
     Timer {
         id: announceTimer
@@ -171,9 +195,6 @@ Item {
         onActivated: root.close()
     }
 
-    // A workspace switch takes the keyboard to a window there, and typing
-    // would no longer reach the field. The focus grab does not end on its own
-    // then, so the launcher closes with the switch.
     Connections {
         target: Compositor
 
@@ -183,9 +204,17 @@ Item {
                 root.toggleLauncher();
         }
 
+        // A workspace switch takes the keyboard to a window there, and typing
+        // would no longer reach the field. The focus grab does not end on its
+        // own then, so the launcher closes with the switch.
         function onFocusedWorkspaceChanged(): void {
             if (root.typing)
                 root.close();
+        }
+
+        function onWorkspaceSwitched(screen: string): void {
+            if (screen === root.screen?.name)
+                root.announce("workspaces");
         }
     }
 
@@ -231,10 +260,7 @@ Item {
             y: root.shown || root.announcing ? 0 : -(island.y + island.height)
 
             Behavior on y {
-                NumberAnimation {
-                    duration: Animations.durationMedium
-                    easing.type: Animations.easingType
-                }
+                Eased {}
             }
         }
 
@@ -318,7 +344,7 @@ Item {
 
                     anchors.centerIn: parent
                     spacing: 10
-                    opacity: root.fadeOut(root.volumeProgress)
+                    opacity: root.fadeOut(root.announceProgress)
                     visible: opacity > 0
 
                     Subtext {
@@ -355,8 +381,8 @@ Item {
                     }
                 }
 
-                // Hands over with the clock the way the clock does with the
-                // panel.
+                // These two hand over with the clock, and with each other, the
+                // way the clock does with the panel.
                 VolumeLevel {
                     id: volumeLevel
 
@@ -364,6 +390,15 @@ Item {
                     value: Audio.volume
                     muted: Audio.muted
                     opacity: root.fadeIn(root.volumeProgress)
+                    visible: opacity > 0
+                }
+
+                WorkspaceStrip {
+                    id: workspaceStrip
+
+                    anchors.centerIn: parent
+                    workspaces: Compositor.workspacesOn(root.screen)
+                    opacity: root.fadeIn(root.workspacesProgress)
                     visible: opacity > 0
                 }
             }
@@ -387,6 +422,7 @@ Item {
 
         Dashboard {
             date: root.date
+            workspace: root.workspace
         }
     }
 
@@ -414,5 +450,11 @@ Item {
             duration: Animations.durationLong
             easing.type: Animations.easingType
         }
+    }
+
+    // How the pill slides and hands over between what it shows.
+    component Eased: NumberAnimation {
+        duration: Animations.durationMedium
+        easing.type: Animations.easingType
     }
 }

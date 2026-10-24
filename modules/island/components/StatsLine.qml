@@ -13,6 +13,9 @@ import qs.utils
 Item {
     id: root
 
+    // The workspace the dashboard's screen shows, or 0 before Hyprland reports.
+    required property int workspace
+
     readonly property string batteryText: {
         if (!Battery.available)
             return "";
@@ -76,6 +79,11 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 1
         spacing: 18
+
+        Caption {
+            visible: root.workspace > 0
+            text: `workspace ${root.workspace}`
+        }
 
         Figure {
             objectName: "displays"
