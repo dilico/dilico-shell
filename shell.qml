@@ -132,12 +132,6 @@ ShellRoot {
                 enabled: Idle.inhibited
             }
 
-            SystemClock {
-                id: clock
-
-                precision: SystemClock.Minutes
-            }
-
             // The launcher is opened by a key, not a click, so nothing would
             // bring the keyboard over; the grab does, and Hyprland ends it if
             // something else takes the keyboard.
@@ -162,7 +156,7 @@ ShellRoot {
                 anchors.fill: parent
                 shown: panel.revealed
                 screen: panel.modelData
-                date: clock.date
+                date: Clock.date
 
                 // On the island, which fills the window and holds everything
                 // else. Qt delivers hover to the topmost item under the pointer

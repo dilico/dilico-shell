@@ -23,10 +23,14 @@ ShellRoot {
     // that blinks out while files are saved is not one.
     settings.watchFiles: false
 
+    // Seconds, though it shows minutes: the lock is up through sleep, and a
+    // minute clock wakes showing the minute it fell asleep in (see services/Clock).
+    // The lock is what shows on waking, so it ticks each second rather than
+    // waiting to hear of it; it only runs while locked.
     SystemClock {
         id: clock
 
-        precision: SystemClock.Minutes
+        precision: SystemClock.Seconds
     }
 
     WlSessionLock {
