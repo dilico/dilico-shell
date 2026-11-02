@@ -475,6 +475,12 @@ the service, however many screens there are; every island hears the signal and t
 the focused screen acts. Not an `IpcHandler` called through `qs ipc call` from the bind: that starts a
 process on every press, and a held key repeats it.
 
+A key that acts on a service rather than on a screen is connected in that service, which
+hears Compositor's signal once: the brightness keys (`brightness-up`, `brightness-down`)
+reach `Brightness`, which steps on the scale its slider shows. Such a key does nothing
+while the shell is not running, so a key that only changes something the shell can
+observe — the volume keys run `wpctl` — stays a command in `hyprland.lua`.
+
 Compositor-side animation must be disabled for our surfaces
 (`hl.layer_rule { match = { namespace = "^quickshell:dilico$" }, no_anim = true }`). Two
 animators on one surface fight; the shell owns its own motion.

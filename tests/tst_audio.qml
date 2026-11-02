@@ -53,9 +53,9 @@ Item {
     }
 
     Component {
-        id: volumeLevelComponent
+        id: levelComponent
 
-        VolumeLevel {}
+        Level {}
     }
 
     ListCardCase {
@@ -144,11 +144,11 @@ Item {
     }
 
     TestCase {
-        name: "VolumeLevel"
+        name: "Level"
         when: windowShown
 
         function test_widthHoldsWhileTheNumberGrows() {
-            const level = createTemporaryObject(volumeLevelComponent, parent, { value: 0.05 });
+            const level = createTemporaryObject(levelComponent, parent, { value: 0.05 });
             // A Row lays itself out on the next frame.
             waitForRendering(level);
             const narrow = level.implicitWidth;

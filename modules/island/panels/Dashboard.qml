@@ -61,10 +61,6 @@ Item {
     // The polled services poll while the dashboard exists, and stop with it.
     // Media is watched by its card, which only exists on the home pane.
     Watch {
-        service: Brightness
-    }
-
-    Watch {
         service: SystemStats
     }
 

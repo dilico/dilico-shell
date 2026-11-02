@@ -24,6 +24,10 @@ Singleton {
     // hl.dsp.global("quickshell:launcher").
     signal launcherPressed()
 
+    // A brightness key, 1 for up and -1 for down, bound in hyprland.lua to
+    // hl.dsp.global("quickshell:brightness-up") and "...:brightness-down".
+    signal brightnessPressed(int direction)
+
     // A screen changed its own workspace, named by the screen. Not when
     // Hyprland first reports, nor when focus moves to another screen.
     signal workspaceSwitched(string screen)
@@ -93,6 +97,18 @@ Singleton {
         name: "launcher"
         description: "Open the app launcher"
         onPressed: root.launcherPressed()
+    }
+
+    GlobalShortcut {
+        name: "brightness-up"
+        description: "Turn the brightness up"
+        onPressed: root.brightnessPressed(1)
+    }
+
+    GlobalShortcut {
+        name: "brightness-down"
+        description: "Turn the brightness down"
+        onPressed: root.brightnessPressed(-1)
     }
     // qmllint enable unresolved-type
 }

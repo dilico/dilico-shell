@@ -206,6 +206,22 @@ Item {
             field.clear();
         }
 
+        function test_backlight() {
+            const max = 38787;
+            compare(Backlight.toUnits(0, max), Backlight.floor, "0 is the dimmest, never off");
+            compare(Backlight.toUnits(1, max), max);
+            compare(Backlight.toLevel(Backlight.floor, max), 0);
+            compare(Backlight.toLevel(max, max), 1);
+            fuzzyCompare(Backlight.toLevel(Backlight.toUnits(0.5, max), max), 0.5, 0.001);
+            compare(Backlight.step(max, max, 1), max, "full stays full");
+            compare(Backlight.step(Backlight.floor, max, -1), Backlight.floor, "the dimmest stays");
+            compare(Backlight.step(max, max, -1), Backlight.toUnits(0.95, max));
+            compare(Backlight.step(Backlight.toUnits(0.5, max), max, 1), Backlight.toUnits(0.55, max), "a step from a step goes to the next");
+            compare(Backlight.step(Backlight.toUnits(0.47, max), max, 1), Backlight.toUnits(0.5, max), "between two, up goes to the one above");
+            compare(Backlight.step(Backlight.toUnits(0.47, max), max, -1), Backlight.toUnits(0.45, max), "and down to the one below");
+            compare(Backlight.step(Backlight.floor, 255, 1), Backlight.toUnits(0.05, 255), "a coarse backlight still steps");
+        }
+
         function test_signalBars() {
             compare(bars.children[0].color, Colors.textMid);
             compare(bars.children[1].color, Colors.textMid);

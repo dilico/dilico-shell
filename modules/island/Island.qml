@@ -11,8 +11,8 @@ import qs.services
 import qs.utils
 
 // The black shape at the top edge: a clock pill at rest, the dashboard once
-// clicked, the launcher from its key, and the volume or the workspaces for a
-// moment after either changes. Fills the window; the window's mask decides
+// clicked, the launcher from its key, and the volume, the brightness or the
+// workspaces for a moment after one changes. Fills the window; the window's mask decides
 // which parts of it take input.
 Item {
     id: root
@@ -21,8 +21,8 @@ Item {
     required property bool shown
     required property ShellScreen screen
     required property date date
-    // Whether this is the screen the user is on, the one a change of volume
-    // or workspace shows on and the launcher's key opens.
+    // Whether this is the screen the user is on, the one a change of volume,
+    // brightness or workspace shows on and the launcher's key opens.
     readonly property bool focused: Compositor.focused(root.screen)
     property bool open: false
     // What the island grows into: "dashboard" from a click on the pill,
@@ -32,12 +32,14 @@ Item {
     property string panel: "dashboard"
     readonly property bool typing: root.open && root.panel === "launcher"
 
-    // For a moment after the volume or the workspace changes, the pill comes
-    // down with it. Not over an open panel: the dashboard's slider already
-    // shows the volume, and a switch with a panel open is the panel's.
+    // For a moment after the volume, the brightness or the workspace changes,
+    // the pill comes down with it. Not over an open panel: the dashboard's
+    // sliders already show the levels, and a switch with a panel open is the
+    // panel's.
     readonly property bool announcing: announceTimer.running
 
-    // What the pill shows instead of the clock: "volume", "workspaces", or ""
+    // What the pill shows instead of the clock: "volume", "brightness",
+    // "workspaces", or ""
     // for the clock. Set by a change, the latest one winning; cleared when the
     // pill is wanted for itself, so one that times out leaves still showing
     // what it came down for rather than changing on the way up.
@@ -48,8 +50,9 @@ Item {
     // arrives already showing what it came down for. Between the two, one
     // falls as the other rises, so the clock stays out.
     property real volumeProgress: root.announced === "volume" ? 1 : 0
+    property real brightnessProgress: root.announced === "brightness" ? 1 : 0
     property real workspacesProgress: root.announced === "workspaces" ? 1 : 0
-    readonly property real announceProgress: root.volumeProgress + root.workspacesProgress
+    readonly property real announceProgress: root.volumeProgress + root.brightnessProgress + root.workspacesProgress
 
     // The workspace this screen shows, for the dashboard.
     readonly property int workspace: Compositor.workspaceOn(root.screen)
@@ -61,10 +64,11 @@ Item {
     readonly property int pillHeight: 34
     readonly property int pillPadding: 28
     readonly property real clockWidth: Math.round(pillRow.implicitWidth + root.pillPadding)
-    readonly property real volumeWidth: volumeLevel.implicitWidth + root.pillPadding
-    readonly property real workspacesWidth: workspaceStrip.implicitWidth + root.pillPadding
     // Each width weighted by how far the pill has handed over to it.
-    readonly property real pillWidth: Math.round(root.clockWidth * (1 - root.announceProgress) + root.volumeWidth * root.volumeProgress + root.workspacesWidth * root.workspacesProgress)
+    readonly property real pillWidth: Math.round(root.clockWidth * (1 - root.announceProgress)
+        + (volumeLevel.implicitWidth + root.pillPadding) * root.volumeProgress
+        + (brightnessLevel.implicitWidth + root.pillPadding) * root.brightnessProgress
+        + (workspaceStrip.implicitWidth + root.pillPadding) * root.workspacesProgress)
 
     // The panel is loaded whenever progress is above 0, so these are only
     // ever 0 when progress is too and the size math never reads them.
@@ -85,7 +89,7 @@ Item {
     // Where the resting pill takes input, measured from the top edge, so it
     // covers a notch's fillets and the gap above a pill. Only the clock: while
     // a panel is open or animating, the window takes the whole screen,
-    // and the volume and the workspaces take none, so they never resize this
+    // and what the pill comes down to show takes none, so it never resizes this
     // under the pointer.
     readonly property rect hitArea: Qt.rect(Math.round((root.width - root.clockWidth) / 2) - root.flare, 0, root.clockWidth + root.flare * 2, root.gap + root.pillHeight)
 
@@ -143,8 +147,8 @@ Item {
         root.open = false;
     }
 
-    // Brings the pill down showing `what`, "volume" or "workspaces", on the
-    // screen the user is on.
+    // Brings the pill down showing `what`, "volume", "brightness" or
+    // "workspaces", on the screen the user is on.
     function announce(what: string): void {
         if (!root.focused || root.blocking)
             return;
@@ -163,6 +167,12 @@ Item {
         Eased {}
     }
 
+    Behavior on brightnessProgress {
+        enabled: slide.y === 0
+
+        Eased {}
+    }
+
     Behavior on workspacesProgress {
         enabled: slide.y === 0
 
@@ -174,6 +184,14 @@ Item {
 
         function onAdjusted(): void {
             root.announce("volume");
+        }
+    }
+
+    Connections {
+        target: Brightness
+
+        function onAdjusted(): void {
+            root.announce("brightness");
         }
     }
 
@@ -381,15 +399,26 @@ Item {
                     }
                 }
 
-                // These two hand over with the clock, and with each other, the
-                // way the clock does with the panel.
-                VolumeLevel {
+                // These hand over with the clock, and with each other, the way
+                // the clock does with the panel.
+                Level {
                     id: volumeLevel
 
                     anchors.centerIn: parent
+                    glyph: Icons.volume(Audio.muted, Audio.volume)
                     value: Audio.volume
                     muted: Audio.muted
                     opacity: root.fadeIn(root.volumeProgress)
+                    visible: opacity > 0
+                }
+
+                Level {
+                    id: brightnessLevel
+
+                    anchors.centerIn: parent
+                    glyph: Glyphs.brightness
+                    value: Brightness.level
+                    opacity: root.fadeIn(root.brightnessProgress)
                     visible: opacity > 0
                 }
 

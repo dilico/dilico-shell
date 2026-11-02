@@ -16,8 +16,9 @@ import qs.services
 ShellRoot {
     // A singleton is only created on first reference, which would otherwise be
     // whenever something first reads it. The notification daemon has to be up
-    // from login, and so does the launcher's key; the backlight takes its one
-    // reading before the dashboard is first opened (see Brightness). Here
+    // from login, and so do the launcher's key and the brightness keys, which
+    // reach Brightness through Compositor; the backlight takes its one reading
+    // before the dashboard is first opened (see Brightness). Here
     // rather than in a window, so it runs once however many screens there are.
     Component.onCompleted: {
         Notifications.count;

@@ -30,6 +30,9 @@ from the edge and flares into it (`true`).
 - **Volume pill** — when the volume changes (the volume and mute keys, or anything else
   that turns the output up, down or off), the island drops down with the level for a
   moment, on the screen you are on. Not while the dashboard is open, whose slider shows it.
+- **Brightness pill** — the same for the brightness: the brightness keys (5% a press, see
+  below), or anything else that changes the backlight. 0% is the dimmest the screen goes,
+  never off.
 
 Close it with a click outside, or Escape once you've clicked anything inside it (the
 dashboard only takes the keyboard on a click, so a workspace switch while it's open
@@ -87,7 +90,7 @@ then switch back (Ctrl+Alt+F1, or whichever console Hyprland is on) and unlock.
 
 - quickshell 0.3.1+, Qt 6
 - Hyprland, PipeWire, NetworkManager, BlueZ, UPower with power-profiles-daemon
-- `brightnessctl`, `loginctl`, `systemctl`
+- `brightnessctl`, `udevadm`, `gdbus`, `loginctl`, `systemctl`
 - JetBrainsMono Nerd Font
 - An icon theme for app icons; `shell.qml` names it (`Adwaita`) in its `IconTheme` pragma
 
@@ -116,6 +119,14 @@ The launcher opens from a key Hyprland hands the shell:
 
 ```lua
 hl.bind(mainMod .. " + SPACE", hl.dsp.global("quickshell:launcher"))
+```
+
+The brightness keys too, so they step 5% at a time on the same scale as the slider, and bring
+the pill down:
+
+```lua
+hl.bind("XF86MonBrightnessUp",   hl.dsp.global("quickshell:brightness-up"),   { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.global("quickshell:brightness-down"), { locked = true, repeating = true })
 ```
 
 The shell animates itself; the compositor animating the same surface makes it jitter:
