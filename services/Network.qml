@@ -2,11 +2,13 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Networking
 import qs.utils
 
 // Wifi through NetworkManager, and the one attempt at joining a network that
-// can be under way at a time. NetworkManager's quirks around joining are all
+// can be under way at a time; of a cable, only whether one is in use, and its
+// address. NetworkManager's quirks around joining are all
 // absorbed here, so the list that shows it stays declarative.
 Singleton {
     id: root
@@ -39,9 +41,21 @@ Singleton {
     // 0..1
     readonly property real strength: root.active?.signalStrength ?? 0
 
+    // A wired connection that is up, or null. NetworkManager prefers a cable
+    // to wifi, so while there is one it carries the traffic, whatever wifi is
+    // doing, unless its profile says otherwise.
+    readonly property var wiredDevice: Networking.devices.values.find(d => d.type === DeviceType.Wired && d.connected) ?? null
+    readonly property bool wired: root.wiredDevice !== null
+    readonly property string wiredAddress: Addresses.first(root.addresses, root.wiredDevice?.name ?? "")
+
     // The wifi card itself: its interface and hardware (MAC) address.
     readonly property string interfaceName: root.device?.name ?? ""
     readonly property string hardwareAddress: root.device?.address ?? ""
+    readonly property string address: Addresses.first(root.addresses, root.interfaceName)
+
+    // Each interface's IPv4 addresses, by name (see Addresses), kept only
+    // while something shows the network list. Quickshell does not have them.
+    property var addresses: ({})
 
     // Whether the connection reaches the internet, in words, or "" while
     // NetworkManager has not checked.
@@ -264,6 +278,40 @@ Singleton {
         repeat: true
         triggeredOnStart: true
         onTriggered: root.rescan()
+    }
+
+    function readAddress(line: string): void {
+        const next = Addresses.apply(root.addresses, line);
+        if (next !== root.addresses)
+            root.addresses = next;
+    }
+
+    // Each change as it happens, and the addresses there are, listed once the
+    // monitor is up so none is missed in between; one listed and reported
+    // both counts once.
+    Process {
+        id: addressMonitor
+
+        command: ["ip", "-o", "-4", "monitor", "address"]
+        running: root.watchers > 0
+        onRunningChanged: {
+            root.addresses = {};
+            addressList.running = addressMonitor.running;
+        }
+
+        stdout: SplitParser {
+            onRead: line => root.readAddress(line)
+        }
+    }
+
+    Process {
+        id: addressList
+
+        command: ["ip", "-o", "-4", "address", "show"]
+
+        stdout: SplitParser {
+            onRead: line => root.readAddress(line)
+        }
     }
 
     // NetworkManager can leave an attempt hanging.

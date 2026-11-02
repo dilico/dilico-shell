@@ -382,8 +382,9 @@ Item {
 
                     Label {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Icons.wifi(Network.connected, Network.strength)
-                        color: Network.enabled ? Colors.textMid : Colors.textFaint
+                        // A cable over wifi, as NetworkManager prefers it.
+                        text: Network.wired ? Glyphs.wired : Icons.wifi(Network.connected, Network.strength)
+                        color: Network.wired || Network.enabled ? Colors.textMid : Colors.textFaint
                     }
 
                     Subtext {

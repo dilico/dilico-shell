@@ -251,6 +251,29 @@ Item {
             compare(Format.resolution(1920, 1200), "1920 × 1200");
             compare(Format.refresh(60.003), "60 hz");
             compare(Format.refresh(59.94), "59.94 hz");
+            compare(Format.linkSpeed(100), "100 mb/s");
+            compare(Format.linkSpeed(1000), "1 gb/s");
+            compare(Format.linkSpeed(2500), "2.5 gb/s");
+            compare(Format.linkSpeed(0), "", "an adapter that does not say");
+            compare(Format.parts(["1 gb/s", "", "192.168.1.137"]), "1 gb/s · 192.168.1.137");
+        }
+
+        function test_addresses() {
+            let addresses = {};
+            addresses = Addresses.apply(addresses, "2: wlp0s20f3    inet 192.168.1.15/24 brd 192.168.1.255 scope global noprefixroute wlp0s20f3\\       valid_lft forever preferred_lft forever");
+            addresses = Addresses.apply(addresses, "408: enp0s1    inet 192.168.1.137/24 brd 192.168.1.255 scope global enp0s1");
+            compare(Addresses.first(addresses, "wlp0s20f3"), "192.168.1.15");
+            compare(Addresses.first(addresses, "enp0s1"), "192.168.1.137");
+            verify(Addresses.apply(addresses, "408: enp0s1    inet 192.168.1.137/24 scope global enp0s1") === addresses, "listed and then reported counts once");
+            verify(Addresses.apply(addresses, "Deleted 408: enp0s1    inet 10.0.0.2/8 scope global enp0s1") === addresses, "not an address it has");
+            verify(Addresses.apply(addresses, "nonsense") === addresses);
+            addresses = Addresses.apply(addresses, "408: enp0s1    inet 169.254.7.1/16 brd 169.254.255.255 scope link enp0s1:avahi");
+            compare(Addresses.first(addresses, "enp0s1"), "192.168.1.137", "the first it was given, not a fallback");
+            addresses = Addresses.apply(addresses, "Deleted 408: enp0s1    inet 192.168.1.137/24 scope global enp0s1");
+            compare(Addresses.first(addresses, "enp0s1"), "169.254.7.1", "what is left when one goes");
+            addresses = Addresses.apply(addresses, "9: ppp0    inet 10.64.0.1 peer 10.64.0.2/32 scope global ppp0");
+            compare(Addresses.first(addresses, "ppp0"), "10.64.0.1", "a point-to-point link");
+            compare(Addresses.first(addresses, "eth9"), "");
         }
 
         function test_icons() {

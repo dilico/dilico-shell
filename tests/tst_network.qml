@@ -102,6 +102,7 @@ Item {
         function init() {
             Network.cancel();
             Network.enabled = true;
+            Network.wiredDevice = null;
             Network.networks = [chapel, studio, home];
             card = createTemporaryObject(cardComponent, parent);
             Network.calls = [];
@@ -163,6 +164,35 @@ Item {
             compare(lastCall(), ["setAutoJoin", false], "auto-join starts on and turns off");
         }
 
+        function test_currentRowShowsAddress() {
+            mouseClick(row(chapel), 60, 23);
+            waitForRendering(card);
+            verify(findChildByText(row(chapel), "192.168.1.15"), "the wifi address is in the details");
+        }
+
+        // The cable sits above the list, apart from wifi's switch, and stays
+        // while wifi is off.
+        function test_wiredRowAboveTheList() {
+            Network.wiredAddress = "192.168.1.137";
+            Network.wiredDevice = cable;
+            const wired = findChild(card, "wiredRow");
+            verify(wired);
+            compare(findChild(wired, "summary").text, "1 gb/s · 192.168.1.137");
+            clickWhenLaidOut(wired);
+            verify(wired.detailsOpen);
+            verify(findChildByText(wired, "enp0s1"), "the adapter is in the details");
+            compare(Network.calls.length, 0, "nothing to join");
+            mouseClick(row(chapel), 60, 23);
+            verify(!wired.detailsOpen, "one row has its details open at a time");
+            Network.enabled = false;
+            verify(findChild(card, "wiredRow").visible);
+            verify(switchControl().visible, "the switch stays, under the cable");
+            clickWhenLaidOut(wired);
+            Network.wiredDevice = null;
+            tryVerify(() => !findChild(card, "wiredRow"), 1000, "gone with the cable");
+            compare(card.detailed, null, "its details do not open again with the next cable");
+        }
+
         function test_joiningCollapsesOpenDetails() {
             mouseClick(findChild(row(home), "details"));
             mouseClick(row(studio), 60, 23);
@@ -194,6 +224,14 @@ Item {
             wait(0);
             compare(lastCall(), ["cancel", ""]);
         }
+    }
+
+    QtObject {
+        id: cable
+
+        property string name: "enp0s1"
+        property string address: "aa:bb:cc:dd:ee:ff"
+        property int linkSpeed: 1000
     }
 
     component TestNetwork: QtObject {

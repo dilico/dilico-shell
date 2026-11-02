@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.services
 
-// The wifi list. It decides what a click on a network does: one row has
-// something open at a time.
+// The wifi list, under the cable while one is connected. It decides what a
+// click on a network does: one row has something open at a time.
 ListCard {
     id: root
 
@@ -37,6 +37,7 @@ ListCard {
     service: Network
     switchChecked: Network.enabled
     title: "network"
+    listTitle: "wi-fi"
     items: Network.networks
     offText: "wi-fi is off"
     emptyText: "looking for networks"
@@ -45,6 +46,23 @@ ListCard {
     Component.onCompleted: Network.abandon()
     Component.onDestruction: Network.abandon()
     onSwitchToggled: on => Network.setEnabled(on)
+
+    above: Network.wired ? wiredRow : null
+
+    // A click opens its details, the same as on the connected network. They
+    // close with the cable, rather than open again with the next one.
+    Component {
+        id: wiredRow
+
+        WiredRow {
+            objectName: "wiredRow"
+            detailsOpen: root.detailed === "wired"
+            onClicked: root.openDetails("wired")
+            onDetailsToggled: root.openDetails("wired")
+            Component.onDestruction: if (root.detailed === "wired")
+                root.detailed = null
+        }
+    }
 
     delegate: NetworkRow {
         id: row

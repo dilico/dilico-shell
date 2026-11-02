@@ -18,7 +18,7 @@ ListRow {
 
     visible: root.node !== null
     title: Audio.name(root.node)
-    subtitle: [Audio.where(root.node), root.level()].filter(part => part !== "").join(" · ")
+    subtitle: Format.parts([Audio.where(root.node), root.level()])
     current: Audio.inUse(root.node)
     currentText: "in use"
     glyph: Icons.device(Audio.kind(root.node))

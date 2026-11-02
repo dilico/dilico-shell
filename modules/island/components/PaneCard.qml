@@ -14,6 +14,11 @@ Item {
     // The header's controls at the right edge, in order.
     property alias trailing: trailingRow.data
 
+    // The header's height, and how far in from the right its controls sit,
+    // for a heading in the body to line up with.
+    readonly property int headerHeight: 36
+    readonly property int trailingInset: 4
+
     signal back()
 
     implicitWidth: 360
@@ -30,7 +35,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: Spacing.list
-        height: 36
+        height: root.headerHeight
 
         HeaderButton {
             id: backButton
@@ -56,7 +61,7 @@ Item {
             id: trailingRow
 
             anchors.right: parent.right
-            anchors.rightMargin: 4
+            anchors.rightMargin: root.trailingInset
             anchors.verticalCenter: parent.verticalCenter
             spacing: 4
         }

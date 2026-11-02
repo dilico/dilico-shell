@@ -8,13 +8,15 @@ Two shapes, chosen by `attached` in `config/Appearance.qml`: a floating pill, ro
 all round and `gaps_out` below the edge (`false`, the default), or a notch that hangs
 from the edge and flares into it (`true`).
 
-- **Clock pill** — day, time, wifi, battery, and a dot when notifications are waiting. A
+- **Clock pill** — day, time, network (wifi bars, or a plug while a cable is connected),
+  battery, and a dot when notifications are waiting. A
   key (see below) brings it down for a moment on the screen you are on.
 - **Dashboard** — big clock and date (click either for the month, with today marked and
   arrows to the months either side); lock, log out, reboot, power off; network,
   bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
-  by strength, with their security and signal: join one, with a password if it asks;
-  a saved one opens details — internet status, access points, last used, auto-join,
+  by strength, with their security and signal, under the cable's speed and IP address
+  while one is connected: join one, with a password if it asks; a saved one opens
+  details — internet status, IP address, access points, last used, auto-join,
   disconnect, forget; the `>` on bluetooth lists devices with their kind and battery:
   connect one, pairing it first if new, or open a paired one's details — address,
   connect automatically, disconnect, forget); volume, microphone and brightness sliders
@@ -59,7 +61,7 @@ monitor (vrr, bit depth) belongs in `hyprland.lua`.
 
 A dark frosted screen, opaque: a big clock and the date in the top corner, the password
 as a terminal prompt in the bottom one (`el_scrondo ❯ password:`, coloured like the zsh
-prompt), and battery, wifi and caps lock across from it. Type the password and press
+prompt), and battery, network and caps lock across from it. Type the password and press
 Enter; Escape empties the prompt. It checks the password the way logging in does
 (PAM's `login`), so three wrong tries lock the account for ten minutes, as at the login
 prompt.
@@ -91,7 +93,7 @@ then switch back (Ctrl+Alt+F1, or whichever console Hyprland is on) and unlock.
 
 - quickshell 0.3.1+, Qt 6
 - Hyprland, PipeWire, NetworkManager, BlueZ, UPower with power-profiles-daemon
-- `brightnessctl`, `udevadm`, `gdbus`, `loginctl`, `systemctl`
+- `brightnessctl`, `udevadm`, `gdbus`, `ip`, `loginctl`, `systemctl`
 - JetBrainsMono Nerd Font
 - An icon theme for app icons; `shell.qml` names it (`Adwaita`) in its `IconTheme` pragma
 

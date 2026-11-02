@@ -29,6 +29,7 @@ Item {
             Keyboard.capsLock = false;
             Network.enabled = true;
             Network.connected = true;
+            Network.wiredDevice = null;
             lock = createTemporaryObject(lockComponent, parent);
             waitForRendering(lock);
         }
@@ -91,12 +92,14 @@ Item {
             compare(caps.font.weight, Font.DemiBold);
         }
 
-        function test_wifiInWords() {
-            compare(lock.wifiText(), "wifi");
+        function test_networkInWords() {
+            compare(lock.networkText(), "wifi");
             Network.connected = false;
-            compare(lock.wifiText(), "no wifi");
+            compare(lock.networkText(), "no wifi");
             Network.enabled = false;
-            compare(lock.wifiText(), "wifi off");
+            compare(lock.networkText(), "wifi off");
+            Network.wiredDevice = {};
+            compare(lock.networkText(), "wired", "a cable is what is in use, whatever wifi is doing");
         }
 
         function test_watchesTheKeyboard() {

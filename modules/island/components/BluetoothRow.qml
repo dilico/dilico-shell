@@ -20,7 +20,7 @@ ListRow {
 
     visible: root.device !== null
     title: Bluez.deviceName(root.device)
-    subtitle: [root.kind, root.battery, root.paired && !root.current ? "paired" : ""].filter(part => part !== "").join(" · ")
+    subtitle: Format.parts([root.kind, root.battery, root.paired && !root.current ? "paired" : ""])
     current: root.device?.connected ?? false
     busyText: Bluez.activity(root.device)
     hasDetails: root.paired

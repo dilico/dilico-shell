@@ -22,6 +22,7 @@ DetailsPanel {
 
     facts: [
         ["internet", root.connected ? Network.internet : ""],
+        ["ip address", root.connected ? Network.address : ""],
         ["access points", root.saved.accessPoints > 0 ? String(root.saved.accessPoints) : ""],
         ["last used", !root.connected && root.saved.lastUsed > 0 ? Format.ago(root.saved.lastUsed, root.now) : ""],
         ["interface", root.connected ? Network.interfaceName : ""],

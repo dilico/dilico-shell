@@ -13,6 +13,7 @@ Singleton {
     readonly property string wifi3: String.fromCodePoint(0xf0925)
     readonly property string wifi4: String.fromCodePoint(0xf0928)
     readonly property string wifiOff: String.fromCodePoint(0xf05aa)
+    readonly property string wired: String.fromCodePoint(0xf0200)
     readonly property string bluetooth: String.fromCodePoint(0xf00af)
     readonly property string bluetoothOff: String.fromCodePoint(0xf00b2)
     readonly property string bluetoothConnected: String.fromCodePoint(0xf00b1)

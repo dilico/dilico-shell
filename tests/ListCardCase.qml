@@ -23,6 +23,19 @@ TestCase {
         return root.service.calls[root.service.calls.length - 1];
     }
 
+    // The visible item under `parent` showing `text`, or null: a fact in a
+    // row's details, say.
+    function findChildByText(parent: var, text: string): var {
+        if (parent.visible && parent.text === text)
+            return parent;
+        for (const child of parent.children) {
+            const found = root.findChildByText(child, text);
+            if (found)
+                return found;
+        }
+        return null;
+    }
+
     // Opening a row changes its height; the list moves the rows under it on
     // its next layout pass, so a click has to wait for that.
     function clickWhenLaidOut(item: var): void {

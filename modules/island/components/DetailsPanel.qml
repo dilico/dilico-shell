@@ -9,8 +9,7 @@ import qs.config
 Column {
     id: root
 
-    // Each [label, value]; a fact with nothing to say is left out.
-    property var facts: []
+    property alias facts: factList.facts
     property string switchLabel: ""
     property bool switchChecked: false
     property bool canDisconnect: false
@@ -23,26 +22,8 @@ Column {
 
     spacing: 4
 
-    Repeater {
-        model: root.facts.filter(fact => fact[1] !== "")
-
-        Row {
-            id: fact
-
-            required property var modelData
-
-            spacing: 8
-
-            Caption {
-                width: 92
-                text: fact.modelData[0]
-            }
-
-            Caption {
-                text: fact.modelData[1]
-                color: Colors.textMid
-            }
-        }
+    Facts {
+        id: factList
     }
 
     Item {

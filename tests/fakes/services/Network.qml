@@ -17,10 +17,14 @@ Singleton {
     property string failure: ""
     property bool enabled: true
     property bool connected: true
+    property var wiredDevice: null
+    readonly property bool wired: root.wiredDevice !== null
+    property string wiredAddress: ""
     property var networks: []
     property string internet: "online"
     property string interfaceName: "wlan0"
     property string hardwareAddress: "00:11:22:33:44:55"
+    property string address: "192.168.1.15"
     // Each request as [name, argument]; reset by tests.
     property var calls: []
 

@@ -31,6 +31,13 @@ Singleton {
         return muted ? "off" : root.percent(fraction);
     }
 
+    // A link speed in Mb/s: "100 mb/s", "1 gb/s", "2.5 gb/s"; "" when unknown.
+    function linkSpeed(mbps: int): string {
+        if (mbps <= 0)
+            return "";
+        return mbps < 1000 ? `${mbps} mb/s` : `${mbps / 1000} gb/s`;
+    }
+
     // The time of day, 24-hour: "09:41".
     function time(d: date): string {
         return Qt.formatDateTime(d, "HH:mm");
@@ -90,5 +97,10 @@ Singleton {
     // A refresh rate, whole unless it is not: "60 hz", "59.94 hz".
     function refresh(hz: real): string {
         return Math.abs(hz - Math.round(hz)) < 0.01 ? `${Math.round(hz)} hz` : `${hz.toFixed(2)} hz`;
+    }
+
+    // A row's line of detail: the parts that say something, between dots.
+    function parts(list: var): string {
+        return list.filter(part => part !== "").join(" · ");
     }
 }

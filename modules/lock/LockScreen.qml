@@ -6,7 +6,7 @@ import qs.services
 import qs.utils
 
 // The lock screen on one screen: a big clock and the date in the top corner,
-// the password as a terminal prompt in the bottom one, and battery, wifi and
+// the password as a terminal prompt in the bottom one, and battery, network and
 // caps lock across from it.
 Item {
     id: root
@@ -24,7 +24,9 @@ Item {
         return Auth.failure;
     }
 
-    function wifiText(): string {
+    function networkText(): string {
+        if (Network.wired)
+            return "wired";
         if (!Network.enabled)
             return "wifi off";
         return Network.connected ? "wifi" : "no wifi";
@@ -113,7 +115,7 @@ Item {
         }
 
         Label {
-            text: root.wifiText()
+            text: root.networkText()
             color: Colors.textDim
         }
 
