@@ -66,13 +66,15 @@ ShellRoot {
             // and Hyprland reports no leave until the pointer moves, so hovered
             // would stay true and hold the clock down. Where the pointer was
             // last seen still says whether it is in what the mask has kept.
-            readonly property bool wanted: island.blocking || inside.hovered && (panel.inStrip || panel.inKeepArea)
+            readonly property bool pointed: inside.hovered && (panel.inStrip || panel.inKeepArea)
 
-            // hideTimer delays only the way out, so the clock survives a
-            // pointer that strays off the band for a moment.
-            readonly property bool revealed: panel.wanted || hideTimer.running
+            // hideTimer delays only the pointer's way out, so the clock
+            // survives a pointer that strays off the band for a moment. Not
+            // while a panel is open: as it closes, the island goes by where
+            // the pointer is then.
+            readonly property bool revealed: panel.pointed || hideTimer.running
 
-            onWantedChanged: if (!panel.wanted)
+            onPointedChanged: if (!panel.pointed && !island.open)
                 hideTimer.restart()
 
             screen: panel.modelData

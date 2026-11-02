@@ -12,4 +12,7 @@ Singleton {
     // changing shape rather than one thing swapped for another.
     readonly property int durationLong: 320
     readonly property int easingType: Easing.OutCubic
+    // A fade eases both ways: easing out would take most of what it fades in
+    // its first few frames.
+    readonly property int easingFade: Easing.InOutQuad
 }

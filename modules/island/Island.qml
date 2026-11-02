@@ -57,9 +57,14 @@ Item {
     // The workspace this screen shows, for the dashboard.
     readonly property int workspace: Compositor.workspaceOn(root.screen)
 
-    // 0 is the pill, 1 the open panel. Animated by the state below; every size
-    // and opacity derives from it.
-    property real progress: 0
+    // 0 is the pill, 1 the open panel; every size and opacity derives from
+    // it. Held at 1 while the panel fades.
+    property real progress: root.open || root.fading ? 1 : 0
+
+    // A panel closed with nothing pointing at the clock fades where it
+    // stands, rather than shrinking back into a clock nobody asked for.
+    property bool fading: false
+    property real presence: 1
 
     readonly property int pillHeight: 34
     readonly property int pillPadding: 28
@@ -162,6 +167,52 @@ Item {
         root.announced = ""
     onShownChanged: if (root.shown && !root.announcing)
         root.announced = ""
+    // Opening ends what the pill came down for, which would otherwise be back
+    // once the panel goes. Closing, the panel fades unless the pointer is at
+    // the clock.
+    onOpenChanged: {
+        if (root.open) {
+            announceTimer.stop();
+            fade.complete();
+        } else if (!root.shown) {
+            root.fading = true;
+            fade.restart();
+        }
+    }
+
+    Behavior on progress {
+        enabled: root.presence > 0
+
+        Eased {
+            duration: Animations.durationLong
+        }
+    }
+
+    SequentialAnimation {
+        id: fade
+
+        Eased {
+            target: root
+            property: "presence"
+            to: 0
+            duration: Animations.durationLong
+            easing.type: Animations.easingFade
+        }
+
+        // Unseen, the size and the slide jump back to the hidden pill rather
+        // than animate.
+        PropertyAction {
+            target: root
+            property: "fading"
+            value: false
+        }
+
+        PropertyAction {
+            target: root
+            property: "presence"
+            value: 1
+        }
+    }
 
     Behavior on volumeProgress {
         enabled: slide.y === 0
@@ -251,7 +302,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: Colors.backdrop
-        opacity: root.progress
+        opacity: root.progress * root.presence
         visible: root.blocking
 
         // A MouseArea, not a TapHandler. The panels' controls use
@@ -274,14 +325,20 @@ Item {
         y: root.gap
         width: Math.round(root.pillWidth + (root.formWidth - root.pillWidth) * root.progress)
         height: Math.round(root.pillHeight + (root.formHeight - root.pillHeight) * root.progress)
+        opacity: root.presence
+        // Fading, it takes no more clicks: one landing on it goes to the
+        // backdrop, which has nothing left to close.
+        enabled: !root.fading
 
-        // Slides up past the top edge rather than fading in place.
+        // Slides up past the top edge.
         transform: Translate {
             id: slide
 
-            y: root.shown || root.announcing ? 0 : -(island.y + island.height)
+            y: root.shown || root.announcing || root.blocking ? 0 : -(island.y + island.height)
 
             Behavior on y {
+                enabled: root.presence > 0
+
                 Eased {}
             }
         }
@@ -307,7 +364,7 @@ Item {
 
         // A notch is one path, so its border can follow the fillets up into
         // the screen edge. The paths are only built for a notch: they are
-        // rebuilt on every frame of the open and close animation.
+        // rebuilt on every frame of the island growing or shrinking.
         Shape {
             x: -root.flare
             width: island.width + root.flare * 2
@@ -466,23 +523,6 @@ Item {
         Launcher {
             onLaunched: root.close()
             onCancelled: root.close()
-        }
-    }
-
-    states: State {
-        name: "open"
-        when: root.open
-
-        PropertyChanges {
-            root.progress: 1
-        }
-    }
-
-    transitions: Transition {
-        NumberAnimation {
-            property: "progress"
-            duration: Animations.durationLong
-            easing.type: Animations.easingType
         }
     }
 
