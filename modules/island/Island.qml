@@ -33,9 +33,9 @@ Item {
     readonly property bool typing: root.open && root.panel === "launcher"
 
     // For a moment after the volume, the brightness or the workspace changes,
-    // the pill comes down with it. Not over an open panel: the dashboard's
-    // sliders already show the levels, and a switch with a panel open is the
-    // panel's.
+    // the pill comes down with it, and with the clock from the clock key. Not
+    // over an open panel: the dashboard's sliders already show the levels, a
+    // switch with a panel open is the panel's, and the panel has the clock.
     readonly property bool announcing: announceTimer.running
 
     // What the pill shows instead of the clock: "volume", "brightness",
@@ -147,12 +147,14 @@ Item {
         root.open = false;
     }
 
-    // Brings the pill down showing `what`, "volume", "brightness" or
-    // "workspaces", on the screen the user is on.
+    // Brings the pill down showing `what`, "volume", "brightness",
+    // "workspaces", or "" for the clock, on the screen the user is on. The
+    // clock stays long enough to read; a change only long enough to see.
     function announce(what: string): void {
         if (!root.focused || root.blocking)
             return;
         root.announced = what;
+        announceTimer.interval = what === "" ? 3000 : 1500;
         announceTimer.restart();
     }
 
@@ -199,8 +201,6 @@ Item {
     // again, so a held key keeps it down.
     Timer {
         id: announceTimer
-
-        interval: 1500
     }
 
     // Escape reaches this once the dashboard has the keyboard, which it gets on
@@ -220,6 +220,10 @@ Item {
         function onLauncherPressed(): void {
             if (root.focused)
                 root.toggleLauncher();
+        }
+
+        function onClockPressed(): void {
+            root.announce("");
         }
 
         // A workspace switch takes the keyboard to a window there, and typing

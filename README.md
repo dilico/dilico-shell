@@ -8,7 +8,8 @@ Two shapes, chosen by `attached` in `config/Appearance.qml`: a floating pill, ro
 all round and `gaps_out` below the edge (`false`, the default), or a notch that hangs
 from the edge and flares into it (`true`).
 
-- **Clock pill** — day, time, wifi, battery, and a dot when notifications are waiting.
+- **Clock pill** — day, time, wifi, battery, and a dot when notifications are waiting. A
+  key (see below) brings it down for a moment on the screen you are on.
 - **Dashboard** — big clock and date (click either for the month, with today marked and
   arrows to the months either side); lock, log out, reboot, power off; network,
   bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
@@ -119,6 +120,12 @@ The launcher opens from a key Hyprland hands the shell:
 
 ```lua
 hl.bind(mainMod .. " + SPACE", hl.dsp.global("quickshell:launcher"))
+```
+
+The clock key:
+
+```lua
+hl.bind(mainMod .. " + K", hl.dsp.global("quickshell:clock"))
 ```
 
 The brightness keys too, so they step 5% at a time on the same scale as the slider, and bring

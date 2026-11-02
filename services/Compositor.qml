@@ -24,6 +24,9 @@ Singleton {
     // hl.dsp.global("quickshell:launcher").
     signal launcherPressed()
 
+    // The clock key, bound in hyprland.lua to hl.dsp.global("quickshell:clock").
+    signal clockPressed()
+
     // A brightness key, 1 for up and -1 for down, bound in hyprland.lua to
     // hl.dsp.global("quickshell:brightness-up") and "...:brightness-down".
     signal brightnessPressed(int direction)
@@ -97,6 +100,12 @@ Singleton {
         name: "launcher"
         description: "Open the app launcher"
         onPressed: root.launcherPressed()
+    }
+
+    GlobalShortcut {
+        name: "clock"
+        description: "Show the clock for a moment"
+        onPressed: root.clockPressed()
     }
 
     GlobalShortcut {
