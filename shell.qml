@@ -118,8 +118,8 @@ ShellRoot {
 
                 Region {
                     x: panel.keepArea.x
-                    width: panel.revealed ? panel.keepArea.width : 0
-                    height: panel.revealed ? panel.keepArea.height : 0
+                    width: panel.revealed || island.clockAnnounced ? panel.keepArea.width : 0
+                    height: panel.revealed || island.clockAnnounced ? panel.keepArea.height : 0
                 }
 
                 Region {

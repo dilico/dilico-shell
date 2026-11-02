@@ -37,6 +37,9 @@ Item {
     // over an open panel: the dashboard's sliders already show the levels, a
     // switch with a panel open is the panel's, and the panel has the clock.
     readonly property bool announcing: announceTimer.running
+    // The clock brought down by its key, which takes a click the way the
+    // clock does when the pointer brings it down.
+    readonly property bool clockAnnounced: root.announcing && root.announced === ""
 
     // What the pill shows instead of the clock: "volume", "brightness",
     // "workspaces", or ""
@@ -94,8 +97,8 @@ Item {
     // Where the resting pill takes input, measured from the top edge, so it
     // covers a notch's fillets and the gap above a pill. Only the clock: while
     // a panel is open or animating, the window takes the whole screen,
-    // and what the pill comes down to show takes none, so it never resizes this
-    // under the pointer.
+    // and a change the pill comes down to show takes none, so it never
+    // resizes this under the pointer.
     readonly property rect hitArea: Qt.rect(Math.round((root.width - root.clockWidth) / 2) - root.flare, 0, root.clockWidth + root.flare * 2, root.gap + root.pillHeight)
 
     // A notch's outline as an SVG path, in a frame that starts one fillet to the
