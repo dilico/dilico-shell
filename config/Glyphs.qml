@@ -53,6 +53,7 @@ Singleton {
     readonly property string logout: String.fromCodePoint(0xf0343)
     readonly property string restart: String.fromCodePoint(0xf0709)
     readonly property string power: String.fromCodePoint(0xf0425)
+    readonly property string sleep: String.fromCodePoint(0xf0904)
     readonly property string play: String.fromCodePoint(0xf040a)
     readonly property string pause: String.fromCodePoint(0xf03e4)
     readonly property string next: String.fromCodePoint(0xf04ad)

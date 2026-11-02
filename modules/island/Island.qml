@@ -517,6 +517,7 @@ Item {
         Dashboard {
             date: root.date
             workspace: root.workspace
+            onSessionActed: root.close()
         }
     }
 

@@ -12,7 +12,7 @@ from the edge and flares into it (`true`).
   battery, and a dot when notifications are waiting. A
   key (see below) brings it down for a moment on the screen you are on.
 - **Dashboard** — big clock and date (click either for the month, with today marked and
-  arrows to the months either side); lock, log out, reboot, power off; network,
+  arrows to the months either side); lock, suspend, log out, reboot, power off; network,
   bluetooth, keep-awake and airplane toggles (the `>` on network lists nearby networks
   by strength, with their security and signal, under the cable's speed and IP address
   while one is connected: join one, with a password if it asks; a saved one opens
@@ -41,7 +41,7 @@ Close it with a click outside, or Escape once you've clicked anything inside it 
 dashboard only takes the keyboard on a click, so a workspace switch while it's open
 moves focus normally). It also closes itself after 30 s without the pointer on it.
 
-Log out, reboot and power off ask for a second click within 3 s. Lock does not.
+Log out, reboot and power off ask for a second click within 3 s. Lock and suspend do not.
 
 ### Displays
 

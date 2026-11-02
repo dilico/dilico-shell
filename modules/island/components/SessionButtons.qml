@@ -9,7 +9,8 @@ Item {
     id: root
 
     // The action waiting for its confirming second click, or "". Everything but
-    // lock ends the session, so one stray click must never be enough.
+    // lock and suspend ends the session, so one stray click must never be
+    // enough.
     property string armed: ""
     // The name of the action under the pointer, or "": the glyphs alone do not
     // say what they do, so it shows where the confirmation would.
@@ -23,6 +24,13 @@ Item {
             label: "lock",
             confirm: false,
             run: () => Session.lock()
+        },
+        {
+            key: "suspend",
+            glyph: Glyphs.sleep,
+            label: "suspend",
+            confirm: false,
+            run: () => Session.suspend()
         },
         {
             key: "logout",
@@ -49,6 +57,10 @@ Item {
 
     readonly property string armedLabel: root.actions.find(a => a.key === root.armed)?.label ?? ""
 
+    // An action ran. Nothing is left to show behind the lock, or on the way
+    // out.
+    signal ran()
+
     function activate(action: var): void {
         if (action.confirm && root.armed !== action.key) {
             root.armed = action.key;
@@ -57,6 +69,7 @@ Item {
         }
         root.armed = "";
         action.run();
+        root.ran();
     }
 
     implicitWidth: row.implicitWidth

@@ -11,6 +11,11 @@ Singleton {
         Quickshell.execDetached(["loginctl", "lock-session"]);
     }
 
+    // hypridle's before_sleep_cmd locks the session on the way down.
+    function suspend(): void {
+        Quickshell.execDetached(["systemctl", "suspend"]);
+    }
+
     // The same command as the SUPER+M binding in hyprland.lua.
     function logout(): void {
         Quickshell.execDetached(["sh", "-c", "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"]);

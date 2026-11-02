@@ -22,6 +22,9 @@ Item {
     // What the processes pane is sorted by: "cpu" or "memory".
     property string processSort: "cpu"
 
+    // A session action ran, and the dashboard should close.
+    signal sessionActed()
+
     readonly property int padding: 20
     // Tighter than the sides: the big clock's line height already adds space
     // above it.
@@ -130,6 +133,7 @@ Item {
             SessionButtons {
                 Layout.alignment: Qt.AlignBottom
                 Layout.bottomMargin: 6
+                onRan: root.sessionActed()
             }
         }
 
