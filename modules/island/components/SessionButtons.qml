@@ -11,6 +11,9 @@ Item {
     // The action waiting for its confirming second click, or "". Everything but
     // lock ends the session, so one stray click must never be enough.
     property string armed: ""
+    // The name of the action under the pointer, or "": the glyphs alone do not
+    // say what they do, so it shows where the confirmation would.
+    property string pointed: ""
 
     // Each action says whether it needs that second click and what it runs.
     readonly property var actions: [
@@ -66,14 +69,15 @@ Item {
         onTriggered: root.armed = ""
     }
 
-    // Hangs off to the left, into the header's empty middle.
+    // Hangs off to the left, into the header's empty middle. A waiting
+    // confirmation wins over the name under the pointer.
     Subtext {
         anchors.right: row.left
         anchors.rightMargin: 12
         anchors.verticalCenter: row.verticalCenter
-        visible: root.armed !== ""
-        text: `click again to ${root.armedLabel}`
-        color: Colors.textMid
+        visible: text !== ""
+        text: root.armed !== "" ? `click again to ${root.armedLabel}` : root.pointed
+        color: root.armed !== "" ? Colors.textMid : Colors.textDim
     }
 
     Row {
@@ -94,6 +98,12 @@ Item {
                 label: button.modelData.label
                 highlighted: root.armed === button.modelData.key
                 onClicked: root.activate(button.modelData)
+                onHoveredChanged: {
+                    if (button.hovered)
+                        root.pointed = button.modelData.label;
+                    else if (root.pointed === button.modelData.label)
+                        root.pointed = "";
+                }
             }
         }
     }
